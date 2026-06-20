@@ -27,6 +27,9 @@ export default function Home() {
               <Link href="/dashboard" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
                 Dashboard
               </Link>
+              <Link href="/docs" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+                API
+              </Link>
               <Link
                 href="/dashboard"
                 className="text-[13px] px-4 py-1.5 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
