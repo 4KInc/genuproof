@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { VerificationBadge } from "@/components/verification-badge";
+import { ProvenanceTimeline } from "@/components/provenance-timeline";
 
 interface VerificationResult {
   authentic: boolean;
@@ -24,6 +26,8 @@ interface VerificationResult {
     location?: string;
     timestamp: string;
     hash: string;
+    previousHash: string;
+    data?: Record<string, unknown>;
   }>;
   warnings?: string[];
   scanCount: number;
@@ -35,45 +39,86 @@ interface VerificationResult {
   error?: string;
 }
 
-const EVENT_ICONS: Record<string, string> = {
-  manufactured: "M",
-  shipped: "S",
-  received: "R",
-  inspected: "I",
-  sold: "$",
-  transferred: "T",
-  recalled: "!",
-  custom: "*",
-};
-
 export default function VerifyPage() {
   const params = useParams();
   const code = params.code as string;
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showChain, setShowChain] = useState(false);
+  const [stage, setStage] = useState(0);
 
   useEffect(() => {
+    // Animated verification stages
+    const timers = [
+      setTimeout(() => setStage(1), 400),   // Checking signature
+      setTimeout(() => setStage(2), 900),   // Verifying chain
+      setTimeout(() => setStage(3), 1400),  // Querying database
+    ];
+
     async function verify() {
       try {
         const res = await fetch(`/api/products/verify?code=${code}`);
         const data = await res.json();
-        setResult(data);
+        // Wait for animation to finish
+        setTimeout(() => {
+          setResult(data);
+          setStage(4);
+          setLoading(false);
+        }, 1800);
       } catch {
-        setResult({ authentic: false, scanCount: 0, error: "Verification service unavailable" });
-      } finally {
-        setLoading(false);
+        setTimeout(() => {
+          setResult({ authentic: false, scanCount: 0, error: "Verification service unavailable" });
+          setLoading(false);
+        }, 1800);
       }
     }
     verify();
+
+    return () => timers.forEach(clearTimeout);
   }, [code]);
 
   if (loading) {
+    const stages = [
+      "Initializing verification...",
+      "Checking cryptographic signature...",
+      "Verifying hash chain integrity...",
+      "Querying product database...",
+    ];
+
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <p className="mt-4 text-muted-foreground">Verifying product authenticity...</p>
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="max-w-sm w-full">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 mx-auto rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          </div>
+          <div className="space-y-3">
+            {stages.map((s, i) => (
+              <div
+                key={i}
+                className={`flex items-center gap-3 transition-all duration-300 ${
+                  i <= stage ? "opacity-100" : "opacity-20"
+                }`}
+              >
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                  i < stage
+                    ? "bg-success/20"
+                    : i === stage
+                    ? "bg-primary/20"
+                    : "bg-secondary"
+                }`}>
+                  {i < stage ? (
+                    <svg className="w-3 h-3 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                  ) : i === stage ? (
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  ) : (
+                    <div className="w-2 h-2 rounded-full bg-muted" />
+                  )}
+                </div>
+                <span className="text-sm text-muted-foreground">{s}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -82,19 +127,21 @@ export default function VerifyPage() {
   if (!result || result.error) {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-md w-full text-center">
-          <div className="w-20 h-20 mx-auto rounded-full bg-destructive/10 flex items-center justify-center mb-6">
-            <svg className="w-10 h-10 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold mb-2">Verification Failed</h1>
-          <p className="text-muted-foreground mb-6">
-            {result?.error || "This verification code is not recognized. The product may be counterfeit."}
+        <div className="max-w-md w-full">
+          <VerificationBadge
+            authentic={false}
+            brandName="Unknown"
+            productName="Unverified Product"
+            hash="N/A"
+          />
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            {result?.error || "This verification code is not recognized."}
           </p>
-          <Link href="/" className="text-sm text-primary hover:underline">
-            Return to Authentik
-          </Link>
+          <div className="text-center mt-4">
+            <Link href="/" className="text-sm text-primary hover:underline">
+              Return to Authentik
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -103,198 +150,127 @@ export default function VerifyPage() {
   const { authentic, product, events, warnings, scanCount, certificate } = result;
 
   return (
-    <div className="min-h-screen py-12 px-6">
+    <div className="min-h-screen py-8 px-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <Link href="/" className="flex items-center gap-2 mb-8">
-          <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
+        <Link href="/" className="inline-flex items-center gap-2 mb-8 group">
+          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
             </svg>
           </div>
-          <span className="text-sm font-medium">Authentik</span>
+          <span className="text-sm font-medium group-hover:text-primary transition-colors">Authentik</span>
         </Link>
 
-        {/* Status Banner */}
-        <div
-          className={`rounded-xl p-6 mb-6 border ${
-            authentic
-              ? "bg-success/5 border-success/20"
-              : "bg-destructive/5 border-destructive/20"
-          } animate-fade-in`}
-        >
-          <div className="flex items-start gap-4">
-            <div
-              className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 ${
-                authentic ? "bg-success/10" : "bg-destructive/10"
-              }`}
-            >
-              {authentic ? (
-                <svg className="w-7 h-7 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-              ) : (
-                <svg className="w-7 h-7 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-                </svg>
-              )}
-            </div>
-            <div>
-              <h1 className={`text-2xl font-bold ${authentic ? "text-success" : "text-destructive"}`}>
-                {authentic ? "Authentic Product" : "Verification Failed"}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {authentic
-                  ? "This product has been verified as genuine by the manufacturer."
-                  : "This product could not be verified. It may be counterfeit."}
-              </p>
-            </div>
+        {/* Verification Badge */}
+        {product && (
+          <div className="animate-fade-in mb-8">
+            <VerificationBadge
+              authentic={authentic}
+              brandName={product.brandName}
+              productName={product.name}
+              hash={product.hash}
+            />
           </div>
-        </div>
+        )}
 
         {/* Warnings */}
         {warnings && warnings.length > 0 && (
-          <div className="rounded-xl p-4 mb-6 border border-warning/20 bg-warning/5 animate-fade-in stagger-1" style={{ opacity: 0 }}>
+          <div className="rounded-xl p-4 mb-6 border border-warning/20 bg-warning/5 animate-slide-up">
             <div className="flex items-center gap-2 mb-2">
               <svg className="w-4 h-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126Z" />
               </svg>
-              <span className="text-sm font-medium text-warning">Warnings</span>
+              <span className="text-sm font-medium text-warning">Security Warnings</span>
             </div>
             {warnings.map((w, i) => (
-              <p key={i} className="text-xs text-muted-foreground ml-6">{w}</p>
+              <p key={i} className="text-xs text-muted-foreground ml-6 mt-1">{w}</p>
             ))}
           </div>
         )}
 
-        {/* Product Info */}
+        {/* Details Grid */}
         {product && (
-          <div className="rounded-xl border border-border bg-card p-6 mb-6 animate-fade-in stagger-2" style={{ opacity: 0 }}>
-            <h2 className="text-sm font-medium text-muted-foreground mb-4">Product Details</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Product</span>
-                <span className="text-sm font-medium">{product.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Brand</span>
-                <span className="text-sm font-medium">{product.brandName}</span>
-              </div>
-              {product.sku && (
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">SKU</span>
-                  <span className="text-sm font-mono">{product.sku}</span>
-                </div>
-              )}
-              {product.category && (
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Category</span>
-                  <span className="text-sm">{product.category}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Status</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  product.status === "active"
-                    ? "bg-success/10 text-success"
-                    : product.status === "recalled"
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-warning/10 text-warning"
-                }`}>
-                  {product.status}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Registered</span>
-                <span className="text-sm">{new Date(product.createdAt).toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Total Scans</span>
-                <span className="text-sm font-mono">{scanCount}</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Cryptographic Certificate */}
-        {certificate && (
-          <div className="rounded-xl border border-border bg-card p-6 mb-6 animate-fade-in stagger-3" style={{ opacity: 0 }}>
-            <h2 className="text-sm font-medium text-muted-foreground mb-4">Cryptographic Certificate</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Signature</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  certificate.signatureValid ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                }`}>
-                  {certificate.signatureValid ? "Valid" : "Invalid"}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Chain Integrity</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  certificate.chainIntegrity ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                }`}>
-                  {certificate.chainIntegrity ? "Intact" : "Broken"}
-                </span>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">Hash</span>
-                <p className="text-xs font-mono text-muted-foreground mt-1 break-all bg-secondary/50 p-2 rounded">
-                  {certificate.hash}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Provenance Chain */}
-        {events && events.length > 0 && (
-          <div className="rounded-xl border border-border bg-card p-6 animate-fade-in stagger-4" style={{ opacity: 0 }}>
-            <button
-              onClick={() => setShowChain(!showChain)}
-              className="w-full flex items-center justify-between"
-            >
-              <h2 className="text-sm font-medium text-muted-foreground">
-                Provenance Chain ({events.length} events)
-              </h2>
-              <svg
-                className={`w-4 h-4 text-muted-foreground transition-transform ${showChain ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-              </svg>
-            </button>
-            {showChain && (
-              <div className="mt-4 space-y-4">
-                {events.map((event, i) => (
-                  <div key={i} className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
-                        {EVENT_ICONS[event.type] || "?"}
-                      </div>
-                      {i < events.length - 1 && (
-                        <div className="w-px flex-1 bg-border mt-1" />
-                      )}
-                    </div>
-                    <div className="pb-4">
-                      <div className="text-sm font-medium capitalize">{event.type}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {event.actor} {event.location && `- ${event.location}`}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(event.timestamp).toLocaleString()}
-                      </div>
-                      <div className="text-[10px] font-mono text-muted-foreground/50 mt-1 truncate max-w-xs">
-                        {event.hash}
-                      </div>
-                    </div>
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
+            {/* Product Info */}
+            <div className="rounded-xl border border-border bg-card p-5 animate-slide-up" style={{ animationDelay: "0.1s", opacity: 0 }}>
+              <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Product Details</h2>
+              <div className="space-y-3">
+                {[
+                  { label: "Product", value: product.name },
+                  { label: "Brand", value: product.brandName },
+                  ...(product.sku ? [{ label: "SKU", value: product.sku, mono: true }] : []),
+                  ...(product.category ? [{ label: "Category", value: product.category }] : []),
+                  { label: "Registered", value: new Date(product.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) },
+                  { label: "Total Scans", value: String(scanCount), mono: true },
+                ].map((row) => (
+                  <div key={row.label} className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">{row.label}</span>
+                    <span className={`text-sm ${(row as { mono?: boolean }).mono ? "font-mono" : "font-medium"}`}>
+                      {row.value}
+                    </span>
                   </div>
                 ))}
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">Status</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wider ${
+                    product.status === "active"
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      : product.status === "recalled"
+                      ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                      : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                  }`}>
+                    {product.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Cryptographic Certificate */}
+            {certificate && (
+              <div className="rounded-xl border border-border bg-card p-5 animate-slide-up" style={{ animationDelay: "0.2s", opacity: 0 }}>
+                <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
+                  Cryptographic Certificate
+                </h2>
+                <div className="space-y-3">
+                  {[
+                    { label: "HMAC Signature", valid: certificate.signatureValid },
+                    { label: "Hash Chain", valid: certificate.chainIntegrity },
+                  ].map((check) => (
+                    <div key={check.label} className="flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">{check.label}</span>
+                      <div className="flex items-center gap-1.5">
+                        <div className={`w-1.5 h-1.5 rounded-full ${check.valid ? "bg-emerald-400" : "bg-red-400"}`} />
+                        <span className={`text-[10px] font-medium uppercase tracking-wider ${
+                          check.valid ? "text-emerald-400" : "text-red-400"
+                        }`}>
+                          {check.valid ? "Verified" : "Failed"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 pt-3 border-t border-border">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    SHA-256 Fingerprint
+                  </span>
+                  <p className="text-[11px] font-mono text-muted-foreground/70 break-all mt-1.5 bg-secondary/30 rounded-md px-2.5 py-2 leading-relaxed">
+                    {certificate.hash}
+                  </p>
+                </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Provenance Timeline */}
+        {events && events.length > 0 && (
+          <div className="rounded-xl border border-border bg-card p-5 animate-slide-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
+              Provenance Chain
+              <span className="ml-2 text-primary">{events.length} events</span>
+            </h2>
+            <ProvenanceTimeline events={events} />
           </div>
         )}
 
