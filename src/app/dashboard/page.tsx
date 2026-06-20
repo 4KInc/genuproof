@@ -31,11 +31,22 @@ const TAB_LABELS: Record<Tab, string> = {
   overview: "Overview",
 };
 
+interface ExistingBrand {
+  id: string;
+  name: string;
+  domain: string;
+  industry: string;
+  createdAt: string;
+}
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("register");
   const [brandId, setBrandId] = useState("");
   const [brandName, setBrandName] = useState("");
   const [brandRegistered, setBrandRegistered] = useState(false);
+  const [existingBrands, setExistingBrands] = useState<ExistingBrand[]>([]);
+  const [showNewBrandForm, setShowNewBrandForm] = useState(false);
+  const [brandsLoading, setBrandsLoading] = useState(true);
 
   const [brandForm, setBrandForm] = useState({ name: "", domain: "", industry: "fashion" });
   const [productForm, setProductForm] = useState({
@@ -92,6 +103,44 @@ export default function Dashboard() {
 
   useEffect(() => { if (brandRegistered) fetchThreats(); }, [brandRegistered, fetchThreats]);
 
+  // Load existing brands on mount
+  useEffect(() => {
+    async function loadBrands() {
+      try {
+        const res = await fetch("/api/brands/list");
+        const data = await res.json();
+        if (res.ok && data.brands) setExistingBrands(data.brands);
+      } catch { /* silent */ }
+      finally { setBrandsLoading(false); }
+    }
+    loadBrands();
+  }, []);
+
+  // Load products when brand is selected
+  const loadBrandProducts = useCallback(async (bid: string) => {
+    try {
+      const res = await fetch(`/api/products/list?brandId=${bid}`);
+      const data = await res.json();
+      if (res.ok && data.products) {
+        setProducts(data.products.map((p: Record<string, unknown>) => ({
+          productId: p.productId as string,
+          verificationCode: p.verificationCode as string,
+          hash: p.hash as string,
+          verifyUrl: "",
+          name: p.name as string,
+        })));
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  const selectBrand = (brand: ExistingBrand) => {
+    setBrandId(brand.id);
+    setBrandName(brand.name);
+    setBrandRegistered(true);
+    setActiveTab("products");
+    loadBrandProducts(brand.id);
+  };
+
   const copyCode = (code: string) => { navigator.clipboard.writeText(code); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
 
   const inputClass = "w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:border-primary/50 transition-colors";
@@ -140,10 +189,16 @@ export default function Dashboard() {
           </nav>
 
           <div className="p-5 border-t border-border">
-            <div className="text-[10px] text-muted-foreground/50 space-y-0.5">
+            <div className="text-[10px] text-muted-foreground/50 space-y-0.5 mb-3">
               <div>Products: {products.length}</div>
               <div className="font-mono">{brandId.slice(0, 8)}...</div>
             </div>
+            <button
+              onClick={() => { setBrandRegistered(false); setProducts([]); setThreats([]); setShowNewBrandForm(false); }}
+              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Switch brand
+            </button>
           </div>
         </aside>
       )}
@@ -177,37 +232,89 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Brand Registration */}
+          {/* Brand Selection / Registration */}
           {!brandRegistered ? (
             <div>
               <p className="text-[13px] text-muted-foreground tracking-wide uppercase mb-4 animate-reveal">
-                Get Started
+                Dashboard
               </p>
               <h1 className="font-[family-name:var(--font-display)] text-[2.5rem] leading-[1.05] tracking-tight mb-3 animate-reveal delay-1">
-                Register your <em className="text-accent">brand.</em>
+                Select your <em className="text-accent">brand.</em>
               </h1>
               <p className="text-[13px] text-muted-foreground leading-relaxed mb-8 animate-reveal delay-2">
-                Create a brand profile to start issuing cryptographic product certificates.
+                Choose an existing brand or create a new one.
               </p>
-              <div className="space-y-4 animate-reveal delay-3">
-                <div><label className={labelClass}>Brand Name</label><input type="text" value={brandForm.name} onChange={e => setBrandForm({...brandForm, name: e.target.value})} placeholder="e.g. Luxe Watches" className={inputClass} /></div>
-                <div><label className={labelClass}>Domain</label><input type="text" value={brandForm.domain} onChange={e => setBrandForm({...brandForm, domain: e.target.value})} placeholder="e.g. luxewatches.com" className={inputClass} /></div>
-                <div>
-                  <label className={labelClass}>Industry</label>
-                  <select value={brandForm.industry} onChange={e => setBrandForm({...brandForm, industry: e.target.value})} className={inputClass}>
-                    <option value="fashion">Fashion & Luxury</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="pharmaceuticals">Pharmaceuticals</option>
-                    <option value="food">Food & Beverage</option>
-                    <option value="automotive">Automotive</option>
-                    <option value="cosmetics">Cosmetics</option>
-                    <option value="other">Other</option>
-                  </select>
+
+              {/* Existing brands */}
+              {brandsLoading ? (
+                <div className="text-[12px] text-muted-foreground py-8 text-center animate-reveal delay-3">Loading brands...</div>
+              ) : existingBrands.length > 0 && !showNewBrandForm ? (
+                <div className="animate-reveal delay-3">
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3">
+                    Existing Brands ({existingBrands.length})
+                  </div>
+                  <div className="border-t border-border">
+                    {existingBrands.map((brand) => (
+                      <button
+                        key={brand.id}
+                        onClick={() => selectBrand(brand)}
+                        className="w-full text-left py-4 border-b border-border hover:bg-secondary/30 transition-colors group px-1 -mx-1"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-[14px] font-medium group-hover:text-primary transition-colors">
+                              {brand.name}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                              {brand.domain} &middot; {brand.industry} &middot; {new Date(brand.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <svg className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                          </svg>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setShowNewBrandForm(true)}
+                    className="mt-4 text-[12px] text-primary hover:underline"
+                  >
+                    + Register a new brand
+                  </button>
                 </div>
-                <button onClick={registerBrand} disabled={loading || !brandForm.name || !brandForm.domain} className={btnClass}>
-                  {loading ? "Registering..." : "Register Brand"}
-                </button>
-              </div>
+              ) : (
+                <div className="space-y-4 animate-reveal delay-3">
+                  {existingBrands.length > 0 && (
+                    <button
+                      onClick={() => setShowNewBrandForm(false)}
+                      className="text-[12px] text-muted-foreground hover:text-foreground transition-colors mb-2"
+                    >
+                      &larr; Back to brand list
+                    </button>
+                  )}
+                  <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
+                    New Brand
+                  </div>
+                  <div><label className={labelClass}>Brand Name</label><input type="text" value={brandForm.name} onChange={e => setBrandForm({...brandForm, name: e.target.value})} placeholder="e.g. Luxe Watches" className={inputClass} /></div>
+                  <div><label className={labelClass}>Domain</label><input type="text" value={brandForm.domain} onChange={e => setBrandForm({...brandForm, domain: e.target.value})} placeholder="e.g. luxewatches.com" className={inputClass} /></div>
+                  <div>
+                    <label className={labelClass}>Industry</label>
+                    <select value={brandForm.industry} onChange={e => setBrandForm({...brandForm, industry: e.target.value})} className={inputClass}>
+                      <option value="fashion">Fashion & Luxury</option>
+                      <option value="electronics">Electronics</option>
+                      <option value="pharmaceuticals">Pharmaceuticals</option>
+                      <option value="food">Food & Beverage</option>
+                      <option value="automotive">Automotive</option>
+                      <option value="cosmetics">Cosmetics</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <button onClick={registerBrand} disabled={loading || !brandForm.name || !brandForm.domain} className={btnClass}>
+                    {loading ? "Registering..." : "Register Brand"}
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <>
