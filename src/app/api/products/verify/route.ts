@@ -1,0 +1,251 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getItem, putItem, queryItems, incrementCounter } from "@/lib/dynamodb";
+import { verifySignature, hashProductRecord } from "@/lib/crypto";
+import type { VerificationResult, ThreatAlert } from "@/lib/types";
+
+const SIGNING_SECRET = process.env.SIGNING_SECRET || "authentik-dev-secret";
+
+// Simple GeoIP placeholder — in production, use MaxMind or ip-api
+async function geolocateIP(ip: string): Promise<{ country: string; city: string }> {
+  if (ip === "127.0.0.1" || ip === "::1") {
+    return { country: "Local", city: "Localhost" };
+  }
+  try {
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=country,city`, {
+      signal: AbortSignal.timeout(2000),
+    });
+    if (res.ok) return await res.json();
+  } catch {
+    // Geo lookup is best-effort
+  }
+  return { country: "Unknown", city: "Unknown" };
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const code = req.nextUrl.searchParams.get("code");
+    const productId = req.nextUrl.searchParams.get("productId");
+
+    if (!code && !productId) {
+      return NextResponse.json(
+        { error: "code or productId is required" },
+        { status: 400 }
+      );
+    }
+
+    // Resolve product ID from verification code
+    let resolvedProductId = productId;
+    let resolvedBrandId: string | undefined;
+
+    if (code) {
+      const codeLookup = await getItem(`VERIFY#${code}`, "META");
+      if (!codeLookup) {
+        return NextResponse.json(
+          { authentic: false, error: "Invalid verification code" },
+          { status: 404 }
+        );
+      }
+      resolvedProductId = codeLookup.productId as string;
+      resolvedBrandId = codeLookup.brandId as string;
+    }
+
+    // Fetch product
+    const product = await getItem(`PRODUCT#${resolvedProductId}`, "META");
+    if (!product) {
+      return NextResponse.json(
+        { authentic: false, error: "Product not found" },
+        { status: 404 }
+      );
+    }
+
+    // Verify cryptographic integrity
+    const recordHash = hashProductRecord({
+      productId: product.productId as string,
+      brandId: product.brandId as string,
+      name: product.name as string,
+      sku: product.sku as string | undefined,
+      metadata: product.metadata as Record<string, unknown>,
+      createdAt: product.createdAt as string,
+    });
+
+    const hashMatch = recordHash === product.hash;
+    const signatureValid = verifySignature(
+      product.hash as string,
+      product.signature as string,
+      SIGNING_SECRET
+    );
+
+    // Fetch provenance chain
+    const events = await queryItems(
+      `PRODUCT#${resolvedProductId}`,
+      "EVENT#",
+      { scanForward: true }
+    );
+
+    // Verify chain integrity
+    let chainIntegrity = true;
+    for (let i = 1; i < events.length; i++) {
+      if (events[i].previousHash !== events[i - 1].hash) {
+        chainIntegrity = false;
+        break;
+      }
+    }
+
+    // Record this scan
+    const now = new Date().toISOString();
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
+    const geo = await geolocateIP(ip);
+
+    const scanRecord = {
+      PK: `PRODUCT#${resolvedProductId}`,
+      SK: `SCAN#${now}`,
+      productId: resolvedProductId,
+      timestamp: now,
+      ip,
+      country: geo.country,
+      city: geo.city,
+      userAgent: req.headers.get("user-agent") || "unknown",
+      result: hashMatch && signatureValid ? "authentic" : "suspicious",
+    };
+
+    await Promise.all([
+      putItem(scanRecord),
+      incrementCounter(
+        `PRODUCT#${resolvedProductId}`,
+        "META",
+        "scanCount"
+      ),
+      incrementCounter(
+        `BRAND#${product.brandId}`,
+        "STATS",
+        "scanCount"
+      ),
+    ]);
+
+    // Anomaly detection: check recent scans for this product
+    const warnings: string[] = [];
+    const recentScans = await queryItems(
+      `PRODUCT#${resolvedProductId}`,
+      "SCAN#",
+      { limit: 20 }
+    );
+
+    // Detect geographic anomaly: same product scanned from different countries in short window
+    const countries = new Set(
+      recentScans
+        .filter((s) => {
+          const scanTime = new Date(s.timestamp as string).getTime();
+          return Date.now() - scanTime < 24 * 60 * 60 * 1000; // last 24h
+        })
+        .map((s) => s.country)
+    );
+    if (countries.size > 2) {
+      warnings.push(
+        `Product scanned from ${countries.size} different countries in 24h`
+      );
+      await createThreatAlert({
+        brandId: (resolvedBrandId || product.brandId) as string,
+        type: "geographic_anomaly",
+        severity: "high",
+        productId: resolvedProductId!,
+        details: `Scanned from ${[...countries].join(", ")} in 24h window`,
+        timestamp: now,
+        resolved: false,
+      });
+    }
+
+    // Detect burst scanning: many scans in short window
+    const recentBurstScans = recentScans.filter((s) => {
+      const scanTime = new Date(s.timestamp as string).getTime();
+      return Date.now() - scanTime < 60 * 60 * 1000; // last hour
+    });
+    if (recentBurstScans.length > 10) {
+      warnings.push(
+        `Unusual scan volume: ${recentBurstScans.length} scans in the last hour`
+      );
+      await createThreatAlert({
+        brandId: (resolvedBrandId || product.brandId) as string,
+        type: "burst_scan",
+        severity: "medium",
+        productId: resolvedProductId!,
+        details: `${recentBurstScans.length} scans in 1 hour`,
+        timestamp: now,
+        resolved: false,
+      });
+    }
+
+    if (!hashMatch) {
+      warnings.push("Product record hash mismatch — possible tampering");
+    }
+
+    const result: VerificationResult = {
+      authentic: hashMatch && signatureValid,
+      product: {
+        productId: product.productId as string,
+        brandId: product.brandId as string,
+        brandName: product.brandName as string,
+        name: product.name as string,
+        sku: product.sku as string | undefined,
+        category: product.category as string | undefined,
+        description: product.description as string | undefined,
+        imageUrl: product.imageUrl as string | undefined,
+        verificationCode: product.verificationCode as string,
+        hash: product.hash as string,
+        signature: product.signature as string,
+        status: product.status as "active" | "recalled" | "transferred" | "flagged",
+        createdAt: product.createdAt as string,
+        updatedAt: product.updatedAt as string,
+      },
+      events: events.map((e) => ({
+        productId: e.productId as string,
+        type: e.type as ProvenanceEvent["type"],
+        actor: e.actor as string,
+        location: e.location as string | undefined,
+        timestamp: e.timestamp as string,
+        hash: e.hash as string,
+        previousHash: e.previousHash as string,
+        data: e.data as Record<string, unknown> | undefined,
+      })),
+      warnings,
+      scanCount: (product.scanCount as number) || 0,
+      certificate: {
+        hash: product.hash as string,
+        signatureValid,
+        chainIntegrity,
+      },
+    };
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Verification error:", error);
+    return NextResponse.json(
+      { error: "Verification failed" },
+      { status: 500 }
+    );
+  }
+}
+
+type ProvenanceEvent = {
+  type:
+    | "manufactured"
+    | "shipped"
+    | "received"
+    | "inspected"
+    | "sold"
+    | "transferred"
+    | "recalled"
+    | "custom";
+};
+
+async function createThreatAlert(alert: ThreatAlert) {
+  await putItem({
+    PK: `THREAT#${alert.brandId}`,
+    SK: `ALERT#${alert.timestamp}`,
+    GSI1PK: `BRAND#${alert.brandId}`,
+    GSI1SK: `THREAT#${alert.timestamp}`,
+    ...alert,
+  });
+}
