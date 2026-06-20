@@ -64,6 +64,20 @@ const ENDPOINTS = [
     body: null,
     response: "Binary PNG or SVG image",
   },
+  {
+    method: "POST",
+    path: "/api/products/recall",
+    desc: "Recall a product. Creates recall event, updates status to recalled, generates critical threat alert.",
+    body: '{ "productId": "hex", "reason": "Safety defect in batch #42", "issuedBy": "Quality Assurance" }',
+    response: '{ "success": true, "hash": "sha256...", "status": "recalled" }',
+  },
+  {
+    method: "GET",
+    path: "/api/products/search?code=abc123",
+    desc: "Search products by verification code, product ID, or brand ID",
+    body: null,
+    response: '{ "found": true, "product": { "productId": "...", "name": "...", "status": "active" } }',
+  },
 ];
 
 export default function DocsPage() {

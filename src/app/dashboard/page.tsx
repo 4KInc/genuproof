@@ -265,7 +265,8 @@ export default function Dashboard() {
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             <Link href={`/verify/${p.verificationCode}`} className="text-[11px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors">Verify</Link>
-                            <a href={`/api/products/qr?code=${p.verificationCode}&format=svg`} target="_blank" className="text-[11px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors">QR</a>
+                            <a href={`/qr/${p.verificationCode}`} className="text-[11px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors">QR</a>
+                            <Link href={`/product/${p.productId}`} className="text-[11px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors">Detail</Link>
                           </div>
                         </div>
                       ))}
