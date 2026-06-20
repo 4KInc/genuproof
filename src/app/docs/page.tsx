@@ -1,0 +1,165 @@
+import Link from "next/link";
+
+const ENDPOINTS = [
+  {
+    method: "POST",
+    path: "/api/brands",
+    desc: "Register a new brand",
+    body: '{ "name": "Luxe Watches", "domain": "luxe.com", "industry": "fashion" }',
+    response: '{ "id": "uuid", "name": "...", "plan": "free" }',
+  },
+  {
+    method: "POST",
+    path: "/api/products/register",
+    desc: "Register a single product with cryptographic certificate",
+    body: '{ "brandId": "uuid", "name": "Chronograph 42mm", "sku": "LW-01", "category": "Watches", "manufacturingLocation": "Geneva" }',
+    response: '{ "productId": "hex", "verificationCode": "abc123", "hash": "sha256...", "signature": "hmac..." }',
+  },
+  {
+    method: "POST",
+    path: "/api/products/batch",
+    desc: "Register up to 50 products in one request",
+    body: '{ "brandId": "uuid", "products": [{ "name": "...", "sku": "..." }, ...] }',
+    response: '{ "registered": 50, "products": [...] }',
+  },
+  {
+    method: "GET",
+    path: "/api/products/verify?code=abc123",
+    desc: "Verify a product by code. Records scan, runs anomaly detection.",
+    body: null,
+    response: '{ "authentic": true, "product": {...}, "events": [...], "certificate": { "signatureValid": true, "chainIntegrity": true } }',
+  },
+  {
+    method: "POST",
+    path: "/api/products/events",
+    desc: "Add a hash-chained provenance event",
+    body: '{ "productId": "hex", "type": "shipped", "actor": "FedEx", "location": "NYC" }',
+    response: '{ "hash": "sha256...", "previousHash": "sha256...", "timestamp": "..." }',
+  },
+  {
+    method: "POST",
+    path: "/api/products/transfer",
+    desc: "Transfer product ownership. Creates transfer event, updates status.",
+    body: '{ "productId": "hex", "newOwner": "New Owner LLC", "location": "Miami, FL" }',
+    response: '{ "success": true, "hash": "sha256...", "newOwner": "..." }',
+  },
+  {
+    method: "GET",
+    path: "/api/threats?brandId=uuid",
+    desc: "Fetch threat alerts for a brand",
+    body: null,
+    response: '{ "threats": [{ "type": "geographic_anomaly", "severity": "high", "details": "..." }] }',
+  },
+  {
+    method: "GET",
+    path: "/api/products/list?brandId=uuid",
+    desc: "List all products for a brand (via GSI1)",
+    body: null,
+    response: '{ "products": [...], "count": 42 }',
+  },
+  {
+    method: "GET",
+    path: "/api/products/qr?code=abc123",
+    desc: "Generate QR code (PNG or SVG) for a verification code",
+    body: null,
+    response: "Binary PNG or SVG image",
+  },
+];
+
+export default function DocsPage() {
+  return (
+    <div className="min-h-screen">
+      <nav className="border-b border-border">
+        <div className="max-w-[900px] mx-auto px-6 md:px-10 flex items-center justify-between h-14">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-6 h-6 border-2 border-primary rounded-sm flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+            </div>
+            <span className="text-sm font-medium tracking-wide uppercase">Authentik</span>
+          </Link>
+          <Link href="/dashboard" className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">
+            Dashboard
+          </Link>
+        </div>
+      </nav>
+
+      <div className="max-w-[900px] mx-auto px-6 md:px-10 py-12">
+        <p className="text-[13px] text-muted-foreground tracking-wide uppercase mb-4">
+          Documentation
+        </p>
+        <h1 className="font-[family-name:var(--font-display)] text-[2.5rem] leading-[1.05] tracking-tight mb-3">
+          API <em className="text-accent">Reference</em>
+        </h1>
+        <p className="text-[13px] text-muted-foreground leading-relaxed mb-10 max-w-lg">
+          RESTful API for product registration, verification, provenance tracking,
+          and threat intelligence. All responses are JSON. Base URL: <code className="font-mono text-[12px] bg-secondary px-1.5 py-0.5 border border-border">https://authentik-platform.vercel.app</code>
+        </p>
+
+        <div className="space-y-0 border-t border-border">
+          {ENDPOINTS.map((ep) => (
+            <div key={ep.path + ep.method} className="py-6 border-b border-border">
+              <div className="flex items-center gap-3 mb-2">
+                <span
+                  className={`text-[10px] font-mono font-medium tracking-wide px-2 py-0.5 ${
+                    ep.method === "GET"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-accent/10 text-accent"
+                  }`}
+                >
+                  {ep.method}
+                </span>
+                <code className="font-mono text-[13px] text-foreground">{ep.path}</code>
+              </div>
+              <p className="text-[13px] text-muted-foreground mb-3">{ep.desc}</p>
+
+              {ep.body && (
+                <div className="mb-2">
+                  <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
+                    Request Body
+                  </div>
+                  <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border p-3 overflow-x-auto">
+                    {ep.body}
+                  </pre>
+                </div>
+              )}
+
+              <div>
+                <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
+                  Response
+                </div>
+                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border p-3 overflow-x-auto">
+                  {ep.response}
+                </pre>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 pt-6 border-t border-border">
+          <h2 className="font-[family-name:var(--font-display)] text-xl mb-3">
+            Cryptographic Design
+          </h2>
+          <div className="space-y-3 text-[13px] text-muted-foreground leading-relaxed">
+            <p>
+              <strong className="text-foreground">Product Hash:</strong> Each product record is canonicalized
+              to JSON and hashed with SHA-256. The hash is then signed with HMAC-SHA256 using a server-side
+              secret. Verification recomputes the hash and checks both the hash match and the HMAC signature.
+            </p>
+            <p>
+              <strong className="text-foreground">Provenance Chain:</strong> Each supply chain event includes
+              the hash of the previous event. The chain starts with a genesis event whose previousHash is
+              SHA-256 of an empty string. Tampering with any event breaks all subsequent hash links.
+            </p>
+            <p>
+              <strong className="text-foreground">Anomaly Detection:</strong> Every verification scan records
+              the requester&apos;s IP and geolocation. The system checks for geographic anomalies (same product
+              scanned from 3+ countries in 24 hours) and burst patterns (10+ scans per hour).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
