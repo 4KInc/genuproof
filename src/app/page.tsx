@@ -3,206 +3,283 @@
 import Link from "next/link";
 import { useState } from "react";
 
-const FEATURES = [
-  {
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-      </svg>
-    ),
-    title: "Cryptographic Certificates",
-    description: "Every product gets a unique SHA-256 hash and HMAC signature. Tamper with one byte and verification fails instantly.",
-  },
-  {
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
-      </svg>
-    ),
-    title: "Real-Time Threat Intelligence",
-    description: "AI-powered anomaly detection catches geographic fraud, burst scanning, and counterfeit patterns as they happen.",
-  },
-  {
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
-      </svg>
-    ),
-    title: "Hash-Chained Provenance",
-    description: "Every supply chain event is linked in an immutable hash chain. Break one link and the entire chain flags.",
-  },
-  {
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
-      </svg>
-    ),
-    title: "Instant QR Verification",
-    description: "Consumers scan a QR code and see authenticity status, brand info, and full product journey in under a second.",
-  },
-];
-
-const STATS = [
-  { value: "$2T+", label: "Counterfeit goods market" },
-  { value: "<10ms", label: "Verification latency" },
-  { value: "256-bit", label: "Cryptographic security" },
-  { value: "100%", label: "Tamper detection rate" },
-];
-
 export default function Home() {
   const [verifyCode, setVerifyCode] = useState("");
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-              </svg>
+      <nav className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-sm">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-10">
+          <div className="flex items-center justify-between h-14 border-b border-border">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-6 h-6 border-2 border-primary rounded-sm flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium tracking-wide uppercase">Authentik</span>
+            </Link>
+            <div className="flex items-center gap-6">
+              <Link href="/verify" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+                Verify
+              </Link>
+              <Link href="/dashboard" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+                Dashboard
+              </Link>
+              <Link
+                href="/dashboard"
+                className="text-[13px] px-4 py-1.5 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                Get Started
+              </Link>
             </div>
-            <span className="text-lg font-semibold tracking-tight">Authentik</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/verify" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Verify Product
-            </Link>
-            <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              Dashboard
-            </Link>
-            <Link
-              href="/dashboard"
-              className="text-sm px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Get Started
-            </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border text-xs text-muted-foreground mb-6 animate-fade-in">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-              Protecting brands in real-time
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] animate-fade-in stagger-1" style={{ opacity: 0 }}>
-              Kill counterfeits with
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> cryptographic proof</span>
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in stagger-2" style={{ opacity: 0 }}>
-              Every product gets a unique cryptographic certificate. Consumers verify in one scan.
-              AI catches counterfeit patterns before they spread. Built on DynamoDB for sub-10ms verification at any scale.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in stagger-3" style={{ opacity: 0 }}>
-              <Link
-                href="/dashboard"
-                className="w-full sm:w-auto px-8 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors animate-pulse-glow"
+      <section className="pt-28 pb-16 px-6 md:px-10">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="grid md:grid-cols-[1fr,380px] gap-12 md:gap-20 items-start">
+            <div>
+              <p className="text-[13px] text-muted-foreground tracking-wide uppercase mb-6 animate-reveal">
+                Anti-counterfeiting platform
+              </p>
+              <h1
+                className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,6vw,4.5rem)] leading-[1.05] tracking-[-0.02em] animate-reveal delay-1"
               >
-                Register Your Brand
-              </Link>
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <input
-                  type="text"
-                  placeholder="Enter verification code"
-                  value={verifyCode}
-                  onChange={(e) => setVerifyCode(e.target.value)}
-                  className="flex-1 sm:w-64 px-4 py-3 rounded-lg bg-secondary border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && verifyCode.trim()) {
-                      window.location.href = `/verify/${verifyCode.trim()}`;
-                    }
-                  }}
-                />
-                <button
-                  onClick={() => verifyCode.trim() && (window.location.href = `/verify/${verifyCode.trim()}`)}
-                  className="px-4 py-3 rounded-lg border border-border text-sm font-medium hover:bg-secondary transition-colors"
+                Every authentic product
+                <br />
+                deserves <em className="text-accent">proof.</em>
+              </h1>
+              <p className="mt-8 text-[15px] text-muted-foreground leading-relaxed max-w-[480px] animate-reveal delay-2">
+                Cryptographic certificates that travel with your product from factory to consumer.
+                One scan to verify. One tampered byte to detect. Built on DynamoDB for verification
+                at any scale.
+              </p>
+
+              {/* Actions */}
+              <div className="mt-10 flex flex-col sm:flex-row items-start gap-3 animate-reveal delay-3">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors"
                 >
-                  Verify
-                </button>
+                  Register your brand
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </Link>
+                <div className="flex items-center border border-border bg-card">
+                  <input
+                    type="text"
+                    placeholder="Verification code"
+                    value={verifyCode}
+                    onChange={(e) => setVerifyCode(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && verifyCode.trim()) {
+                        window.location.href = `/verify/${verifyCode.trim()}`;
+                      }
+                    }}
+                    className="w-44 px-3 py-2.5 text-[13px] bg-transparent placeholder:text-muted-foreground/60 focus:outline-none font-mono"
+                  />
+                  <button
+                    onClick={() => verifyCode.trim() && (window.location.href = `/verify/${verifyCode.trim()}`)}
+                    className="px-3 py-2.5 border-l border-border text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  >
+                    Verify
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Certificate preview card */}
+            <div className="animate-reveal delay-4 hidden md:block">
+              <div className="relative">
+                <div className="border border-border bg-card p-6 guilloche">
+                  {/* Certificate header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+                      Certificate of Authenticity
+                    </div>
+                    <div className="w-8 h-8 border border-primary/30 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-border mb-5" />
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">Brand</div>
+                      <div className="font-[family-name:var(--font-display)] text-lg">Luxe Watches</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">Product</div>
+                      <div className="text-[13px]">Royal Oak Chronograph 42mm</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">Status</div>
+                      <div className="inline-flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        <span className="text-[12px] text-primary font-medium">Verified Authentic</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-border my-5" />
+
+                  <div>
+                    <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1.5">SHA-256 Fingerprint</div>
+                    <div className="font-mono text-[10px] text-muted-foreground leading-relaxed break-all">
+                      139fd93e71a9fb2e3ef01af8...d17b97
+                    </div>
+                  </div>
+
+                  {/* Stamp */}
+                  <div className="absolute -bottom-3 -right-3 w-20 h-20 border-2 border-primary/20 rounded-full flex items-center justify-center rotate-[-8deg]">
+                    <div className="text-[7px] tracking-[0.2em] uppercase text-primary/30 font-bold text-center leading-tight">
+                      Verified
+                      <br />
+                      Authentic
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-12 border-y border-border">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+      {/* Hash ticker */}
+      <div className="border-y border-border py-2.5 overflow-hidden">
+        <div className="hash-ticker">
+          <div className="hash-ticker-inner font-mono text-[11px] text-muted-foreground/40 tracking-wider">
+            139fd93e71a9fb2e3ef01af8aa60fc077f9dcdd5c4d71963939fd45406d17b97 &middot; cac3be9bdc7c79839fa7001330109fc6fcc72ed1a1dbbe676a0e27a3f50855b6 &middot; ad3f0d6f0151514275f99b0c2bd6a46daeefd328a7db8cee5b3f1b67a23fc566 &middot; 98aca598f27b8d82999de4e1d95c429d2b4c54d821e9a979a2d277d1c496e0c2 &middot;&nbsp;
+            139fd93e71a9fb2e3ef01af8aa60fc077f9dcdd5c4d71963939fd45406d17b97 &middot; cac3be9bdc7c79839fa7001330109fc6fcc72ed1a1dbbe676a0e27a3f50855b6 &middot; ad3f0d6f0151514275f99b0c2bd6a46daeefd328a7db8cee5b3f1b67a23fc566 &middot; 98aca598f27b8d82999de4e1d95c429d2b4c54d821e9a979a2d277d1c496e0c2 &middot;&nbsp;
+          </div>
+        </div>
+      </div>
+
+      {/* Bento Stats + Features */}
+      <section className="py-20 px-6 md:px-10">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="grid md:grid-cols-4 gap-px bg-border">
+            {[
+              { value: "$2T+", label: "Global counterfeit market", sub: "annually" },
+              { value: "<10ms", label: "Verification latency", sub: "DynamoDB" },
+              { value: "SHA-256", label: "Cryptographic standard", sub: "HMAC signed" },
+              { value: "100%", label: "Tamper detection", sub: "hash chain" },
+            ].map((stat, i) => (
+              <div
+                key={stat.label}
+                className={`bg-background p-8 animate-reveal delay-${i + 1}`}
+              >
+                <div className="font-[family-name:var(--font-display)] text-3xl md:text-4xl tracking-tight">
                   {stat.value}
                 </div>
-                <div className="mt-1 text-sm text-muted-foreground">{stat.label}</div>
+                <div className="mt-2 text-[13px] text-foreground">{stat.label}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">{stat.sub}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight">
-              Enterprise-grade authentication,{" "}
-              <span className="text-muted-foreground">zero complexity</span>
-            </h2>
-            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-              Built for brands that can&apos;t afford counterfeits. Every layer is designed to make forgery mathematically impossible.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {FEATURES.map((feature) => (
-              <div
-                key={feature.title}
-                className="group p-6 rounded-xl border border-border bg-card hover:border-primary/50 transition-all duration-300"
-              >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  {feature.icon}
+      {/* Features — editorial layout */}
+      <section className="pb-20 px-6 md:px-10">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="grid md:grid-cols-2 gap-16">
+            <div>
+              <p className="text-[13px] text-muted-foreground tracking-wide uppercase mb-4">
+                How it protects
+              </p>
+              <h2 className="font-[family-name:var(--font-display)] text-3xl md:text-[2.5rem] leading-[1.1] tracking-tight">
+                Three layers of defense,
+                <br />
+                <em className="text-accent">zero complexity.</em>
+              </h2>
+            </div>
+            <div className="space-y-0 border-t border-border">
+              {[
+                {
+                  num: "01",
+                  title: "Cryptographic Certificates",
+                  desc: "Every product gets a unique SHA-256 hash and HMAC-SHA256 signature. Tamper with one byte and verification fails. No private keys for consumers to manage.",
+                },
+                {
+                  num: "02",
+                  title: "Hash-Chained Provenance",
+                  desc: "Every supply chain event is cryptographically linked to the previous one. An unbroken chain from factory to consumer. Break one link and the entire trail flags.",
+                },
+                {
+                  num: "03",
+                  title: "Threat Intelligence",
+                  desc: "Real-time anomaly detection catches geographic fraud, burst scanning patterns, and counterfeit hotspots. AI-powered alerts before counterfeits spread.",
+                },
+              ].map((f) => (
+                <div key={f.num} className="py-6 border-b border-border group">
+                  <div className="flex items-start gap-6">
+                    <span className="font-mono text-[12px] text-muted-foreground pt-0.5 shrink-0">
+                      {f.num}
+                    </span>
+                    <div>
+                      <h3 className="text-[15px] font-medium mb-1.5 group-hover:text-primary transition-colors">
+                        {f.title}
+                      </h3>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">
+                        {f.desc}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 px-6 border-t border-border">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold tracking-tight text-center mb-16">How it works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+      {/* How it works — horizontal steps */}
+      <section className="py-20 px-6 md:px-10 border-t border-border bg-secondary/30">
+        <div className="max-w-[1200px] mx-auto">
+          <p className="text-[13px] text-muted-foreground tracking-wide uppercase mb-4">Process</p>
+          <h2 className="font-[family-name:var(--font-display)] text-3xl md:text-[2.5rem] leading-[1.1] tracking-tight mb-14">
+            From registration to<br />verification in <em className="text-accent">seconds.</em>
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-px bg-border">
             {[
               {
-                step: "01",
-                title: "Register Products",
-                description: "Upload your product catalog. Each item gets a unique cryptographic certificate and QR code.",
+                step: "Register",
+                desc: "Upload your product catalog. Each item receives a unique cryptographic certificate and QR code. Batch registration via API.",
+                detail: "POST /api/products/register",
               },
               {
-                step: "02",
-                title: "Consumers Verify",
-                description: "Scan the QR or enter the code. Instant verification with full provenance chain and brand info.",
+                step: "Verify",
+                desc: "Consumers scan the QR or enter the code. Instant verification with full provenance chain, brand details, and trust certificate.",
+                detail: "GET /api/products/verify",
               },
               {
-                step: "03",
-                title: "AI Monitors Threats",
-                description: "Real-time anomaly detection catches counterfeits. Geographic fraud maps, burst alerts, and incident reports.",
+                step: "Monitor",
+                desc: "Real-time anomaly detection. Geographic fraud heatmaps. Burst scan alerts. Counterfeit pattern intelligence delivered to your dashboard.",
+                detail: "GET /api/threats",
               },
-            ].map((item) => (
-              <div key={item.step} className="relative">
-                <div className="text-6xl font-bold text-primary/10 mb-4">{item.step}</div>
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+            ].map((item, i) => (
+              <div key={item.step} className="bg-background p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="w-7 h-7 border border-border flex items-center justify-center font-mono text-[11px] text-muted-foreground">
+                    {i + 1}
+                  </span>
+                  <span className="font-[family-name:var(--font-display)] text-xl">{item.step}</span>
+                </div>
+                <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
+                  {item.desc}
+                </p>
+                <code className="font-mono text-[10px] text-accent/70 bg-accent/5 px-2 py-1 border border-accent/10">
+                  {item.detail}
+                </code>
               </div>
             ))}
           </div>
@@ -210,37 +287,42 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 border-t border-border">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold tracking-tight mb-4">
-            Stop losing revenue to counterfeits
-          </h2>
-          <p className="text-muted-foreground mb-8">
-            Join brands using cryptographic authentication to protect their products and customers.
-            Free tier includes 100 product verifications per month.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-flex px-8 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
-          >
-            Start Protecting Your Brand
-          </Link>
+      <section className="py-20 px-6 md:px-10 border-t border-border">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="max-w-xl">
+            <h2 className="font-[family-name:var(--font-display)] text-3xl md:text-[2.5rem] leading-[1.1] tracking-tight mb-4">
+              Stop losing revenue<br />to counterfeits.
+            </h2>
+            <p className="text-[13px] text-muted-foreground leading-relaxed mb-8">
+              Free tier includes 100 product verifications per month.
+              Enterprise API for high-volume brands. No credit card required.
+            </p>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors"
+            >
+              Start protecting your brand
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-border">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="w-5 h-5 rounded bg-primary flex items-center justify-center">
-              <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+      <footer className="py-6 px-6 md:px-10 border-t border-border">
+        <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+            <div className="w-4 h-4 border border-primary/40 rounded-sm flex items-center justify-center">
+              <svg className="w-2.5 h-2.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
               </svg>
             </div>
             Authentik
           </div>
-          <div className="text-xs text-muted-foreground">
-            Built with Next.js, DynamoDB, and Vercel. Powered by cryptographic proof.
+          <div className="text-[11px] text-muted-foreground/60">
+            Next.js &middot; DynamoDB &middot; Vercel &middot; SHA-256 &middot; HMAC
           </div>
         </div>
       </footer>

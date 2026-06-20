@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Authentik | Anti-Counterfeiting & Product Authentication",
+  title: "Authentik | Product Authentication Platform",
   description:
-    "Protect your brand and customers with cryptographic product authentication, real-time threat intelligence, and tamper-evident provenance chains.",
+    "Cryptographic product authentication. Tamper-evident provenance chains. Real-time counterfeit intelligence.",
 };
 
 export default function RootLayout({
@@ -26,9 +26,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-full flex flex-col antialiased">{children}</body>
     </html>
   );
 }
