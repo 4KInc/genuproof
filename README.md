@@ -10,9 +10,13 @@ Cryptographic certificates that travel with your product from factory to consume
 
 ## What It Does
 
-Authentik gives brands cryptographic proof of product authenticity. Every registered product receives a unique SHA-256 hash, HMAC-SHA256 signature, and verification code with QR. As products move through the supply chain, each event is cryptographically linked to the previous one in a tamper-evident hash chain. Consumers scan a QR code to instantly verify authenticity.
+Authentik gives brands cryptographic proof of product authenticity. Every registered product receives a unique SHA-256 hash, HMAC-SHA256 signature, and verification code with QR. As products move through the supply chain, each event is cryptographically linked to the previous one in a tamper-evident hash chain. Consumers scan a QR code to instantly verify authenticity — no app, no wallet, one scan.
 
-The platform includes real-time threat intelligence powered by DynamoDB Streams and AWS Lambda: every verification scan is captured by a stream, processed by a Lambda function for anomaly detection, and alerts are pushed to the brand's dashboard in real time via Server-Sent Events.
+The platform includes real-time threat intelligence powered by DynamoDB Streams, AWS Lambda, and **Gemini 2.5 Flash**: every verification scan is captured by a stream, processed by Lambda for anomaly detection, classified by Gemini AI (severity, attack vector, confidence score, natural-language narrative), and alerts are pushed to the brand's dashboard in real time via Server-Sent Events. The AI operations log records every Gemini call with latency, tokens, and classification results.
+
+**Pricing:** Starter (Free, 10 products) · Brand ($99/month, 500 products + AI threat detection) · Business ($299/month, unlimited + EU DPP export + API webhooks). Stripe checkout live at `/pricing`.
+
+**EU DPP Compliance:** ESPR-2024/1781 compatible JSON export at `/api/products/dpp-export`. Batteries mandatory now, textiles and electronics mandatory 2027.
 
 ## Architecture
 
@@ -65,41 +69,56 @@ AWS Lambda (authentik-threat-detector)        │
 | `BRAND#id` | `PRODUCT#ts` | Products by brand (sorted) |
 | `BRAND#id` | `THREAT#ts` | Threats by brand (sorted) |
 
-### DynamoDB Streams + Lambda Pipeline
+### DynamoDB Streams + Lambda + Gemini Pipeline
 
-Every write to the `authentik` table is captured by DynamoDB Streams (NEW_IMAGE). The `authentik-threat-detector` Lambda function is triggered on SCAN# inserts with a batch size of 10 and a 5-second batching window. The Lambda runs three checks:
+Every write to the `authentik` table is captured by DynamoDB Streams (NEW_IMAGE). The `authentik-threat-detector` Lambda function is triggered on SCAN# and EVENT# inserts with a batch size of 10 and a 5-second batching window. The Lambda runs four anomaly checks:
 
 1. **Geographic anomaly:** Queries recent scans for the same product. If scanned from 3+ countries within 24 hours, generates a HIGH severity alert.
 2. **Burst scanning:** Counts scans within the last hour. If 10+ scans detected, generates a MEDIUM severity alert (possible counterfeit code testing).
-3. **Hash tampering:** If the verification result was anything other than "authentic", generates a CRITICAL severity alert.
+3. **Claim violation:** If a product has already been claimed by a consumer and is scanned by a different device, generates a HIGH severity alert (tag-cloning indicator).
+4. **Hash tampering:** If the verification result was anything other than "authentic", generates a CRITICAL severity alert.
+
+When any check fires, the Lambda calls **Gemini 2.5 Flash** with the full threat context. Gemini returns: severity (LOW/MEDIUM/HIGH/CRITICAL), attack_vector (tag_cloning/burst_testing/geographic_distribution/hash_tampering/unauthorized_resale), a 2-3 sentence narrative, recommended brand actions, and a confidence score (0-100).
+
+A second Gemini integration point — the **Chain Gap Analyst** — triggers when a provenance event reveals a temporal gap >72 hours, analyzing possible causes (customs hold, carrier switch, unauthorized storage, cold chain breach).
+
+Every Gemini call is logged to the OPS_LOG partition in DynamoDB with agent name, trigger type, anomaly flags, severity, attack vector, confidence, and latency. The `/ops-log` page exposes this as a live auto-refreshing dashboard.
 
 Alerts are written back to DynamoDB with `source: "lambda-stream"`. The SSE endpoint (`/api/stream`) polls for new threats every 3 seconds and streams them to the dashboard's `LiveThreats` component, which flashes on new alerts with no page refresh needed.
 
-### Cryptographic Design
+### Cryptographic Design (5 Primitives)
 
-1. **Product Registration:** `hash = SHA-256(canonical JSON)`, `signature = HMAC-SHA256(hash, server_secret)`
-2. **Provenance Chain:** `event.hash = SHA-256(event_data + previous_event.hash)` — tamper-evident linked chain
-3. **Verification:** Recompute hash from stored fields, verify HMAC, walk the chain checking each link
-4. **Anomaly Detection:** Geographic fraud (3+ countries/24h), burst scanning (10+ scans/hour), hash tampering
+1. **Product Hash:** `hash = SHA-256(canonical JSON)` — deterministic product fingerprint
+2. **HMAC Signature:** `signature = HMAC-SHA256(hash, server_secret)` — server-authenticated integrity
+3. **Provenance Chain:** `event.hash = SHA-256(event_data + previous_event.hash)` — tamper-evident linked chain
+4. **Device Fingerprint:** `fingerprint = SHA-256(ip + userAgent)` — anti-tag-cloning claim lock
+5. **Email Privacy Hash:** `emailHash = SHA-256(email)` — consumer identity without PII storage
 
-## Pages (14)
+**Verification:** Recompute hash from stored fields, verify HMAC, walk the chain checking each link. All in one scan, under one second.
+
+**Anti-Tag-Cloning (5 layers):** Claim lock (device fingerprint) → Scan velocity (scans/day over lifetime) → Burst detection (10+ scans/hour) → Geographic anomaly (3+ countries/24h) → Dispute flow (consumer ownership challenge)
+
+## Pages (15)
 
 | Page | Route | Description |
 |---|---|---|
 | Landing | `/` | Hero, features, stats, hash ticker, certificate preview, dark mode toggle |
-| Dashboard | `/dashboard` | Brand selector, product registration, supply chain events, threats, overview with live threat feed + activity feed |
+| Dashboard | `/dashboard` | Brand selector, 5 tabs: Overview (live threat feed + activity), Register, Products, Supply Chain, Threats |
 | Verify (entry) | `/verify` | Verification code input |
 | Verify (result) | `/verify/[code]` | Animated verification, certificate, provenance chain, share/export actions |
 | QR Certificate | `/qr/[code]` | Printable branded QR certificate with product details |
 | Product Detail | `/product/[id]` | Full product view, crypto identity, QR, scan history table, provenance |
+| Pricing | `/pricing` | Three tiers (Starter/Brand/Business) with Stripe checkout |
 | Explore | `/explore` | Public product gallery with category filters |
 | Compare | `/compare` | Side-by-side product verification comparison |
 | Analytics | `/analytics` | Platform analytics: daily scans, hourly distribution, geo, categories, status |
+| Integrations | `/integrations` | Supply chain integration docs (Shipping, POS, Warehouse) + simulation panel with 4 journey templates |
+| Ops Log | `/ops-log` | AI operations dashboard: Gemini call log with severity, attack vector, confidence, latency |
 | Status | `/status` | Live platform status with 8 service checks and latency measurements |
 | API Docs | `/docs` | Full API reference with request/response examples |
 | Embed Badge | `/embed/[code]` | Embeddable verification widget (iframe-ready) |
 
-## API Endpoints (27)
+## API Endpoints (37)
 
 ### Brands
 | Method | Endpoint | Description |
@@ -121,15 +140,46 @@ Alerts are written back to DynamoDB with `source: "lambda-stream"`. The SSE endp
 | `POST` | `/api/products/history` | Bulk provenance: same event to multiple products |
 | `POST` | `/api/products/transfer` | Ownership transfer with chain event |
 | `POST` | `/api/products/recall` | Product recall with critical alert |
+| `POST` | `/api/products/claim` | Consumer claim with device fingerprint lock |
+| `POST` | `/api/products/dispute` | Consumer ownership dispute |
 | `GET` | `/api/products/certificate?code=X` | Export full cryptographic certificate (JSON) |
 | `GET` | `/api/products/qr?code=X` | Generate QR code (PNG or SVG) |
+| `GET` | `/api/products/dpp-export?code=X` | EU Digital Product Passport export (ESPR-2024/1781) |
 
-### Threat Intelligence
+### Webhook Ingestion
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/ingest/shipping` | Carrier webhooks (FedEx, DHL, UPS, USPS, Chronopost) |
+| `POST` | `/api/ingest/pos` | POS webhooks (Shopify, Square, WooCommerce, Stripe) |
+| `POST` | `/api/ingest/warehouse` | WMS webhooks (SAP, Oracle, Manhattan, custom) |
+
+### Integrations
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/integrations/configure` | Configure integration (generates ingest key) |
+| `POST` | `/api/integrations/simulate` | Run supply chain simulation |
+| `GET` | `/api/integrations/status` | Integration status |
+| `GET` | `/api/integrations/journeys` | Available journey templates (4 industries) |
+
+### Threat Intelligence & AI
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/api/threats?brandId=X` | Fetch threat alerts for a brand |
+| `GET` | `/api/ops-log?limit=50` | Gemini AI operations log (agent, severity, confidence, latency) |
 | `GET` | `/api/scans?productId=X` | Scan history with location aggregation |
 | `GET` | `/api/stream?brandId=X` | Server-Sent Events for real-time threat alerts |
+
+### Catalog
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/catalog/categories` | 14 product categories |
+| `GET` | `/api/catalog/actors` | 37 supply chain actors (carriers, warehouses, inspection, retailers) |
+| `GET` | `/api/catalog/locations` | 37 geographic locations (manufacturing, distribution, retail) |
+
+### Stripe
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/stripe/checkout` | Create Stripe checkout session (subscription) |
 
 ### Platform
 | Method | Endpoint | Description |
@@ -138,7 +188,6 @@ Alerts are written back to DynamoDB with `source: "lambda-stream"`. The SSE endp
 | `GET` | `/api/audit?limit=30` | Platform-wide audit log |
 | `GET` | `/api/explore?limit=50` | Public product listing |
 | `GET` | `/api/health` | Health check with DB latency |
-| `GET` | `/api/og?brand=X&product=Y` | Dynamic Open Graph image (Edge) |
 | `POST` | `/api/webhooks` | Register webhook URL |
 | `GET` | `/api/webhooks?brandId=X` | List webhooks |
 | `DELETE` | `/api/webhooks` | Delete webhook |
@@ -166,17 +215,29 @@ Alerts are written back to DynamoDB with `source: "lambda-stream"`. The SSE endp
 - Bulk provenance: add same event to multiple products
 - Expandable event details with hash verification
 
-### Live Threat Intelligence (DynamoDB Streams + Lambda)
+### Live Threat Intelligence (DynamoDB Streams + Lambda + Gemini)
 - **DynamoDB Streams** captures every scan write in real time
-- **AWS Lambda** (`authentik-threat-detector`) processes stream events:
+- **AWS Lambda** (`authentik-threat-detector`, 412 LOC) processes stream events:
   - Geographic anomaly detection (3+ countries in 24 hours)
   - Burst scan detection (10+ scans per hour)
+  - Claim violation detection (tag-cloning indicator)
   - Hash/signature tampering detection
+- **Gemini 2.5 Flash** classifies threats: severity, attack vector, confidence score, natural-language narrative, recommended brand actions
+- **Gemini Chain Gap Analyst**: temporal gaps >72h trigger supply chain risk analysis
+- **AI Ops Log**: every Gemini call logged with agent, trigger, severity, confidence, latency → `/ops-log` dashboard
 - Alerts written back to DynamoDB with `source: "lambda-stream"`
 - **Server-Sent Events** (`/api/stream`) push alerts to dashboard in real time
 - **LiveThreats component** connects via EventSource, flashes on new alerts
 - Threat feed with severity levels (low/medium/high/critical)
 - Webhook notifications for scans, threats, recalls
+
+### Anti-Tag-Cloning System
+The most common counterfeiting attack: buy one real product, scan its QR, clone the tag onto hundreds of fakes. Authentik detects this with 5 layers:
+1. **Claim lock:** First consumer scan locks product to device fingerprint
+2. **Velocity detection:** Abnormal scans/day over product lifetime
+3. **Burst detection:** 10+ scans in 1-hour window
+4. **Geographic anomaly:** Same product scanned from 3+ countries in 24h
+5. **Dispute flow:** Consumer ownership challenge with evidence collection
 
 ### Analytics
 - Daily scan charts (7-day, CSS-only bar charts)
@@ -206,14 +267,30 @@ Alerts are written back to DynamoDB with `source: "lambda-stream"`. The SSE endp
 - Grain noise overlay for tactile depth
 - Editorial typography with uppercase micro-labels
 
+### Supply Chain Integrations
+- **Shipping:** FedEx, DHL, UPS, USPS, Chronopost webhook ingestion
+- **POS:** Shopify, Square, WooCommerce, Stripe webhook ingestion
+- **Warehouse:** WMS scanning (received, inspected, stored, dispatched, returned)
+- **Integration configuration:** generates ingest keys per carrier/platform
+- **4 simulation templates:** Luxury Watch, Fashion Handbag, Pharmaceutical, Electronics
+
+### EU Digital Product Passport (DPP)
+- ESPR-2024/1781 compatible JSON export at `/api/products/dpp-export`
+- Product identification, manufacturer, supply chain traceability, cryptographic verification, sustainability fields
+- Content-Disposition header for direct download
+- Batteries mandatory now, textiles and electronics mandatory 2027
+
 ## Tech Stack
 
 - **Frontend:** Next.js 16, TypeScript, Tailwind CSS
+- **AI:** Gemini 2.5 Flash (`@google/generative-ai`) — threat classification + chain gap analysis
 - **Database:** Amazon DynamoDB (single-table, PAY_PER_REQUEST, Streams enabled)
-- **Compute:** AWS Lambda (Node.js 20, threat detection)
+- **Compute:** AWS Lambda (Node.js 20, threat detection + Gemini integration)
+- **Payments:** Stripe (subscription checkout, 3 tiers)
 - **Deployment:** Vercel (auto-deploy on git push)
 - **Real-time:** DynamoDB Streams + Lambda + Server-Sent Events
-- **Cryptography:** Node.js `crypto` (SHA-256, HMAC-SHA256)
+- **Cryptography:** Node.js `crypto` (SHA-256, HMAC-SHA256, Merkle trees)
+- **Testing:** Playwright (24 e2e tests)
 - **QR:** `qrcode` (npm)
 - **Fonts:** Instrument Serif (display), Geist (body), Geist Mono (code)
 
@@ -280,7 +357,52 @@ npm run dev
 
 **Verify any product:** `https://authentik-platform.vercel.app/verify/{code}`
 
-## Hackathon
+## Testing
+
+24 end-to-end Playwright tests covering all critical paths:
+
+```bash
+npm test              # Run all 24 tests
+npm run test:ui       # Interactive Playwright UI
+```
+
+| Suite | Tests | Coverage |
+|---|---|---|
+| `api-health.spec.ts` | 4 | Health endpoint, 14 categories, 37 actors, 4 journey templates |
+| `verification.spec.ts` | 5 | Authentic product verification (hash + signature + chain), error handling, verify page UI, direct URL, invalid code |
+| `dpp-export.spec.ts` | 2 | EU DPP JSON export (ESPR-2024/1781, SHA-256, HMAC-SHA256), error handling |
+| `dashboard.spec.ts` | 4 | Brand selector, overview tab, products tab, threats tab |
+| `pages.spec.ts` | 9 | Landing, pricing, ops-log, docs, explore, QR certificate, product detail, integrations, status |
+
+## Pre-existing Work
+
+**Pre-existing (before May 19, 2026):**
+- Next.js 16, React 19, Tailwind CSS v4 — open-source frameworks
+- `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb` — AWS SDK
+- `stripe` — Stripe SDK
+- `qrcode`, `sharp`, `uuid`, `crypto-js` — open-source npm packages
+- No application code, business logic, or UI existed before the hackathon period
+
+**Built during the hackathon (May 19 - August 17, 2026):**
+- All 37 API endpoints, 15 pages, and UI components
+- Cryptographic design: SHA-256 hashing, HMAC-SHA256 signatures, hash-chained provenance, device fingerprinting, email privacy hashing
+- DynamoDB single-table schema (11 PK/SK patterns, 2 GSIs)
+- Lambda threat detector with Gemini 2.5 Flash integration (2 independent AI integration points)
+- Anti-tag-cloning system (5-layer detection)
+- Supply chain webhook ingestion (shipping, POS, warehouse)
+- EU DPP export endpoint (ESPR-2024/1781)
+- Stripe subscription checkout (3 tiers)
+- SSE real-time threat streaming
+- AI operations log and dashboard
+- All 24 Playwright e2e tests
+- Swiss Certificate design aesthetic
+
+## Hackathons
+
+**Build with Gemini XPRIZE** — $2,000,000 Prize Pool
+- Category: Small Business Services
+- AI: Gemini 2.5 Flash (threat intelligence + chain gap analysis)
+- Google Cloud: Gemini API via `@google/generative-ai`
 
 **H0: Hack the Zero Stack with Vercel v0 and AWS Databases**
 - Track: B2B (Track 2) — Monetizable B2B App
