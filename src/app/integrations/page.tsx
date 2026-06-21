@@ -235,6 +235,214 @@ export default function IntegrationsPage() {
             )}
           </div>
         </div>
+        {/* ═══ SIMULATION ═══ */}
+        <div className="mt-16 pt-12 border-t border-border">
+          <p className="text-[13px] text-muted-foreground tracking-wide uppercase mb-3">Demo</p>
+          <h2 className="font-[family-name:var(--font-display)] text-2xl tracking-tight mb-3">
+            Simulate a <em className="text-accent">full journey.</em>
+          </h2>
+          <p className="text-[13px] text-muted-foreground leading-relaxed mb-8 max-w-lg">
+            Create a product and automatically play out its entire supply chain — from manufacturing
+            through shipping, customs, warehousing, and final sale. Each step is a hash-chained event
+            from a simulated webhook.
+          </p>
+
+          <SimulationPanel />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SimulationPanel() {
+  const [brandId, setBrandId] = useState("");
+  const [brands, setBrands] = useState<Array<{ id: string; name: string }>>([]);
+  const [productName, setProductName] = useState("");
+  const [journey, setJourney] = useState("luxury_watch");
+  const [simulating, setSimulating] = useState(false);
+  const [simResult, setSimResult] = useState<Record<string, unknown> | null>(null);
+  const [brandsLoaded, setBrandsLoaded] = useState(false);
+
+  // Load brands on first interaction
+  const loadBrands = async () => {
+    if (brandsLoaded) return;
+    try {
+      const res = await fetch("/api/brands/list");
+      const data = await res.json();
+      if (res.ok && data.brands) {
+        setBrands(data.brands);
+        if (data.brands.length > 0) setBrandId(data.brands[0].id);
+      }
+    } catch {}
+    setBrandsLoaded(true);
+  };
+
+  const runSimulation = async () => {
+    if (!brandId || !productName) return;
+    setSimulating(true);
+    setSimResult(null);
+    try {
+      const res = await fetch("/api/integrations/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brandId,
+          productName,
+          category: journey === "luxury_watch" ? "Watches" : journey === "fashion_handbag" ? "Handbags" : journey === "pharmaceutical" ? "Pharma" : "Electronics",
+          journey,
+        }),
+      });
+      const data = await res.json();
+      setSimResult(data);
+    } catch (err) {
+      setSimResult({ error: String(err) });
+    } finally {
+      setSimulating(false);
+    }
+  };
+
+  const JOURNEYS = [
+    { value: "luxury_watch", label: "Luxury Watch", desc: "Switzerland → Germany → Memphis → New York (10 steps)" },
+    { value: "fashion_handbag", label: "Fashion Handbag", desc: "Florence → Paris → Los Angeles → Beverly Hills (10 steps)" },
+    { value: "pharmaceutical", label: "Pharmaceutical", desc: "Basel → JFK → New Jersey → Manhattan pharmacy (10 steps)" },
+    { value: "electronics", label: "Electronics", desc: "Shenzhen → Long Beach → San Bernardino → San Francisco (9 steps)" },
+  ];
+
+  return (
+    <div className="grid md:grid-cols-2 gap-8">
+      <div className="space-y-4">
+        <div>
+          <label className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Brand</label>
+          <select
+            value={brandId}
+            onChange={(e) => setBrandId(e.target.value)}
+            onFocus={loadBrands}
+            className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:border-primary/50 cursor-pointer"
+          >
+            <option value="">Select brand</option>
+            {brands.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Product Name</label>
+          <input
+            type="text"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            placeholder="e.g. Platinum Perpetual Calendar"
+            className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:border-primary/50"
+          />
+        </div>
+        <div>
+          <label className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Journey Template</label>
+          <div className="space-y-2">
+            {JOURNEYS.map((j) => (
+              <label
+                key={j.value}
+                className={`flex items-start gap-3 p-3 border cursor-pointer transition-colors ${
+                  journey === j.value ? "border-primary/30 bg-primary/3" : "border-border hover:bg-secondary/30"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="journey"
+                  value={j.value}
+                  checked={journey === j.value}
+                  onChange={() => setJourney(j.value)}
+                  className="mt-0.5"
+                />
+                <div>
+                  <div className="text-[12px] font-medium">{j.label}</div>
+                  <div className="text-[10px] text-muted-foreground">{j.desc}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={runSimulation}
+          disabled={simulating || !brandId || !productName}
+          className="w-full py-2.5 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors disabled:opacity-40 cursor-pointer"
+        >
+          {simulating ? "Simulating supply chain..." : "Run Simulation"}
+        </button>
+      </div>
+
+      <div>
+        {simResult ? (
+          <div>
+            {simResult.success ? (
+              <div>
+                <div className="border border-primary/20 bg-primary/3 p-4 mb-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="text-[11px] font-medium tracking-wide uppercase text-primary">Simulation Complete</span>
+                  </div>
+                  <p className="text-[12px] text-muted-foreground ml-3.5">
+                    Product created with {String((simResult.journey as Record<string, unknown>)?.totalSteps)} hash-chained supply chain events.
+                  </p>
+                </div>
+
+                <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-2">Product</div>
+                <div className="border border-border p-3 mb-4 space-y-1">
+                  <div className="text-[13px] font-medium">{String((simResult.product as Record<string, unknown>)?.name)}</div>
+                  <div className="text-[10px] font-mono text-muted-foreground">Code: {String((simResult.product as Record<string, unknown>)?.verificationCode)}</div>
+                </div>
+
+                <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-2">Journey ({String((simResult.journey as Record<string, unknown>)?.totalSteps)} events)</div>
+                <div className="border-t border-border max-h-48 overflow-y-auto">
+                  {((simResult.journey as Record<string, unknown>)?.events as Array<Record<string, string>>)?.map((e, i) => (
+                    <div key={i} className="flex items-start gap-2 py-2 border-b border-border">
+                      <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                      <div className="text-[11px]">
+                        <span className="font-medium">{e.type}</span>
+                        <span className="text-muted-foreground"> — {e.actor}, {e.location}</span>
+                        <div className="text-[9px] text-muted-foreground/50">{e.source}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 mt-4">
+                  <a
+                    href={(simResult.urls as Record<string, string>)?.verify}
+                    target="_blank"
+                    className="text-[10px] px-3 py-1.5 bg-primary text-primary-foreground tracking-wide hover:bg-primary/90 transition-colors"
+                  >
+                    Verify Product
+                  </a>
+                  <a
+                    href={(simResult.urls as Record<string, string>)?.qr}
+                    target="_blank"
+                    className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+                  >
+                    QR Certificate
+                  </a>
+                  <a
+                    href={(simResult.urls as Record<string, string>)?.product}
+                    target="_blank"
+                    className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+                  >
+                    Product Detail
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <pre className="font-mono text-[10px] text-destructive bg-destructive/5 border border-destructive/20 p-4 overflow-x-auto">
+                {JSON.stringify(simResult, null, 2)}
+              </pre>
+            )}
+          </div>
+        ) : (
+          <div className="border border-dashed border-border py-16 text-center">
+            <p className="text-[12px] text-muted-foreground/50">
+              Select a brand, name your product, choose a journey, and hit simulate.
+              A fully hash-chained supply chain will be created in seconds.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
