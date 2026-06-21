@@ -41,6 +41,9 @@ export default function Home() {
               <Link href="/integrations" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
                 Integrations
               </Link>
+              <Link href="/mcp" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+                MCP
+              </Link>
               <ThemeToggle />
               <Link
                 href="/dashboard"
@@ -71,6 +74,7 @@ export default function Home() {
                 { href: "/verify", label: "Verify" },
                 { href: "/dashboard", label: "Dashboard" },
                 { href: "/docs", label: "API" },
+                { href: "/mcp", label: "MCP" },
               ].map((link) => (
                 <Link
                   key={link.href}
