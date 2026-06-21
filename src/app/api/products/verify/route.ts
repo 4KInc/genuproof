@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getItem, putItem, queryItems, incrementCounter } from "@/lib/dynamodb";
-import { verifySignature, hashProductRecord } from "@/lib/crypto";
+import { verifySignature, hashProductRecord, sha256 } from "@/lib/crypto";
 import type { VerificationResult, ThreatAlert } from "@/lib/types";
 
 const SIGNING_SECRET = process.env.SIGNING_SECRET || "authentik-dev-secret";
@@ -181,6 +181,70 @@ export async function GET(req: NextRequest) {
       warnings.push("Product record hash mismatch — possible tampering");
     }
 
+    // ── Claim-based detection (anti-tag-cloning) ──
+    const claim = await getItem(`PRODUCT#${resolvedProductId}`, "CLAIM");
+    let claimInfo: {
+      claimed: boolean;
+      claimedAt?: string;
+      claimedBy?: string;
+      isClaimant: boolean;
+    } = { claimed: false, isClaimant: false };
+
+    if (claim) {
+      // Product is claimed — check if this scanner is the original claimant
+      const userAgent = req.headers.get("user-agent") || "unknown";
+      const scannerFingerprint = sha256(`${ip}:${userAgent}`);
+      const isOriginalClaimant = scannerFingerprint === claim.fingerprint;
+
+      claimInfo = {
+        claimed: true,
+        claimedAt: claim.claimedAt as string,
+        claimedBy: claim.consumerName as string,
+        isClaimant: isOriginalClaimant,
+      };
+
+      if (!isOriginalClaimant) {
+        warnings.push(
+          "This product has been registered to another consumer. " +
+          "If you purchased this product new, it may be a counterfeit with a cloned tag."
+        );
+        await createThreatAlert({
+          brandId: (resolvedBrandId || product.brandId) as string,
+          type: "duplicate_scan",
+          severity: "high",
+          productId: resolvedProductId!,
+          details: `Claimed product scanned by different device. Original claim: ${claim.claimedAt}. Possible cloned tag.`,
+          timestamp: now,
+          resolved: false,
+        });
+      }
+    }
+
+    // ── Scan velocity detection (anti-tag-cloning at scale) ──
+    const totalScans = ((product.scanCount as number) || 0) + 1;
+    const daysSinceRegistration = Math.max(
+      1,
+      (Date.now() - new Date(product.createdAt as string).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const scansPerDay = totalScans / daysSinceRegistration;
+
+    // A legitimate single product shouldn't average more than 5 scans/day over its lifetime
+    if (totalScans > 20 && scansPerDay > 5) {
+      warnings.push(
+        `Abnormal scan velocity: ${totalScans} total scans (${scansPerDay.toFixed(1)}/day avg). ` +
+        `A single authentic product typically has fewer scans. This may indicate cloned tags.`
+      );
+      await createThreatAlert({
+        brandId: (resolvedBrandId || product.brandId) as string,
+        type: "scan_velocity",
+        severity: "high",
+        productId: resolvedProductId!,
+        details: `Scan velocity ${scansPerDay.toFixed(1)}/day over ${Math.round(daysSinceRegistration)} days (${totalScans} total). Possible tag cloning.`,
+        timestamp: now,
+        resolved: false,
+      });
+    }
+
     const result: VerificationResult = {
       authentic: hashMatch && signatureValid,
       product: {
@@ -218,7 +282,7 @@ export async function GET(req: NextRequest) {
       },
     };
 
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, claim: claimInfo });
   } catch (error) {
     console.error("Verification error:", error);
     return NextResponse.json(

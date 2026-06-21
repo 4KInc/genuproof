@@ -36,12 +36,20 @@ interface VerificationResult {
     chainIntegrity: boolean;
   };
   error?: string;
+  claim?: {
+    claimed: boolean;
+    claimedAt?: string;
+    claimedBy?: string;
+    isClaimant: boolean;
+  };
 }
 
 export default function VerifyPage() {
   const params = useParams();
   const code = params.code as string;
   const [result, setResult] = useState<VerificationResult | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [claimDone, setClaimDone] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState(0);
 
@@ -189,6 +197,73 @@ export default function VerifyPage() {
             {warnings.map((w, i) => (
               <p key={i} className="text-[12px] text-muted-foreground ml-3.5 mt-1">{w}</p>
             ))}
+          </div>
+        )}
+
+        {/* Claim Status / Claim Button */}
+        {product && authentic && (
+          <div className="mb-6 animate-reveal delay-2">
+            {result.claim?.claimed ? (
+              <div className={`border p-4 ${
+                result.claim.isClaimant
+                  ? "border-primary/20 bg-primary/3"
+                  : "border-warning/30 bg-warning/5"
+              }`}>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className={`w-1.5 h-1.5 rounded-full ${result.claim.isClaimant ? "bg-primary" : "bg-warning"}`} />
+                  <span className={`text-[11px] font-medium tracking-wide uppercase ${
+                    result.claim.isClaimant ? "text-primary" : "text-warning"
+                  }`}>
+                    {result.claim.isClaimant ? "Your Product" : "Claimed by Another Consumer"}
+                  </span>
+                </div>
+                <p className="text-[12px] text-muted-foreground ml-3.5">
+                  {result.claim.isClaimant
+                    ? `You registered this product on ${new Date(result.claim.claimedAt!).toLocaleDateString()}. This is your verified purchase.`
+                    : `This product was registered to ${result.claim.claimedBy || "another consumer"} on ${new Date(result.claim.claimedAt!).toLocaleDateString()}. If you purchased this as new, it may have a cloned tag.`
+                  }
+                </p>
+              </div>
+            ) : claimDone ? (
+              <div className="border border-primary/20 bg-primary/3 p-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span className="text-[11px] font-medium tracking-wide uppercase text-primary">Product Claimed</span>
+                </div>
+                <p className="text-[12px] text-muted-foreground ml-3.5 mt-1">
+                  This product is now registered to you. Future scans from other devices will show a warning.
+                </p>
+              </div>
+            ) : (
+              <div className="border border-border p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] font-medium mb-0.5">Register this purchase</div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Claim this product to protect against cloned tags. Future scans from other devices will be flagged.
+                    </p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setClaiming(true);
+                      try {
+                        const res = await fetch("/api/products/claim", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ productId: product.productId }),
+                        });
+                        if (res.ok) setClaimDone(true);
+                      } catch { /* silent */ }
+                      finally { setClaiming(false); }
+                    }}
+                    disabled={claiming}
+                    className="shrink-0 text-[11px] px-4 py-2 bg-primary text-primary-foreground font-medium tracking-wide hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {claiming ? "Claiming..." : "Claim Product"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

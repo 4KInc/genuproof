@@ -64,6 +64,8 @@ export interface ThreatAlert {
     | "duplicate_scan"
     | "geographic_anomaly"
     | "burst_scan"
+    | "scan_velocity"
+    | "claimed_product_scan"
     | "invalid_code"
     | "domain_impersonation";
   severity: "low" | "medium" | "high" | "critical";

@@ -111,7 +111,37 @@ export async function handler(event) {
       console.error("Burst check error:", err);
     }
 
-    // ── Check 3: Suspicious Result ──
+    // ── Check 3: Claim Violation ──
+    // If product is claimed and scan is from a different device
+    try {
+      const claimResult = await ddb.send(
+        new GetCommand({
+          TableName: TABLE,
+          Key: { PK: `PRODUCT#${productId}`, SK: "CLAIM" },
+        })
+      );
+
+      if (claimResult.Item) {
+        // Product is claimed — any new scan from stream means a different device might be scanning
+        // (The claim check in the API already handles the fingerprint comparison,
+        //  but we can flag high-volume scans on claimed products from the stream side)
+        const claimedAt = claimResult.Item.claimedAt;
+        const alert = await createAlert({
+          brandId: await getBrandId(productId),
+          type: "claimed_product_scan",
+          severity: "medium",
+          productId,
+          details: `Scan on claimed product (claimed ${claimedAt}). Possible cloned tag in circulation.`,
+          timestamp,
+        });
+        alerts.push(alert);
+        console.log(`ALERT: Scan on claimed product`);
+      }
+    } catch (err) {
+      console.error("Claim check error:", err);
+    }
+
+    // ── Check 4: Suspicious Result ──
     // If the verification itself returned suspicious/counterfeit
     if (result && result !== "authentic") {
       const alert = await createAlert({
