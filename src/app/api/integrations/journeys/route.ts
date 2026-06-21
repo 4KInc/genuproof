@@ -1,0 +1,111 @@
+import { NextResponse } from "next/server";
+
+// Available journey templates for supply chain simulation
+// External systems can fetch this to show available templates in their UI
+
+const JOURNEYS = [
+  {
+    id: "luxury_watch",
+    name: "Luxury Watch",
+    category: "Watches",
+    steps: 10,
+    route: "Switzerland → Germany → Memphis → New York",
+    description: "Swiss manufacture through COSC certification, EU customs, FedEx international shipping, US distribution, quality assurance, and final retail sale via Shopify.",
+    carriers: ["Swiss Post", "FedEx"],
+    platforms: ["Shopify"],
+    stages: [
+      { type: "manufactured", actor: "Master Watchmaker", location: "Le Brassus, Switzerland" },
+      { type: "inspected", actor: "COSC Certification", location: "Geneva, Switzerland" },
+      { type: "shipped", actor: "Swiss Post International", location: "Geneva, Switzerland" },
+      { type: "inspected", actor: "Customs Authority", location: "Frankfurt, Germany" },
+      { type: "shipped", actor: "FedEx International", location: "Frankfurt, Germany" },
+      { type: "received", actor: "US Distribution Center", location: "Memphis, TN" },
+      { type: "inspected", actor: "Quality Assurance Team", location: "Memphis, TN" },
+      { type: "shipped", actor: "FedEx Priority", location: "Memphis, TN" },
+      { type: "received", actor: "Authorized Dealer", location: "New York, NY" },
+      { type: "sold", actor: "Fifth Avenue Boutique", location: "New York, NY" },
+    ],
+  },
+  {
+    id: "fashion_handbag",
+    name: "Fashion Handbag",
+    category: "Handbags",
+    steps: 10,
+    route: "Florence → Paris → Los Angeles → Beverly Hills",
+    description: "Italian atelier craftsmanship, EU customs clearance, DHL international shipping, west coast distribution, and luxury retail sale via Square POS.",
+    carriers: ["DHL"],
+    platforms: ["Square"],
+    stages: [
+      { type: "manufactured", actor: "Atelier Master Craftsman", location: "Florence, Italy" },
+      { type: "inspected", actor: "Quality Control", location: "Florence, Italy" },
+      { type: "shipped", actor: "DHL Express", location: "Florence, Italy" },
+      { type: "inspected", actor: "EU Customs", location: "Paris, France" },
+      { type: "received", actor: "European Distribution Hub", location: "Paris, France" },
+      { type: "shipped", actor: "DHL International", location: "Paris, France" },
+      { type: "received", actor: "Luxury Retailer Warehouse", location: "Los Angeles, CA" },
+      { type: "shipped", actor: "Internal Logistics", location: "Los Angeles, CA" },
+      { type: "received", actor: "Rodeo Drive Boutique", location: "Beverly Hills, CA" },
+      { type: "sold", actor: "Rodeo Drive Boutique", location: "Beverly Hills, CA" },
+    ],
+  },
+  {
+    id: "pharmaceutical",
+    name: "Pharmaceutical",
+    category: "Pharmaceuticals",
+    steps: 10,
+    route: "Basel → JFK → New Jersey → Manhattan",
+    description: "Swiss pharmaceutical lab through FDA quality audit, cold chain logistics, import inspection, temperature-controlled warehouse, McKesson distribution, and pharmacy sale.",
+    carriers: ["DHL Medical", "McKesson"],
+    platforms: ["WooCommerce"],
+    stages: [
+      { type: "manufactured", actor: "Pharmaceutical Lab", location: "Basel, Switzerland" },
+      { type: "inspected", actor: "FDA Quality Audit", location: "Basel, Switzerland" },
+      { type: "inspected", actor: "Batch Testing Lab", location: "Basel, Switzerland" },
+      { type: "shipped", actor: "Cold Chain Logistics", location: "Basel, Switzerland" },
+      { type: "inspected", actor: "US FDA Import Inspection", location: "JFK Airport, NY" },
+      { type: "received", actor: "Pharmaceutical Warehouse", location: "New Brunswick, NJ" },
+      { type: "inspected", actor: "Temperature Verification", location: "New Brunswick, NJ" },
+      { type: "shipped", actor: "McKesson Distribution", location: "New Brunswick, NJ" },
+      { type: "received", actor: "CVS Pharmacy #4421", location: "Manhattan, NY" },
+      { type: "sold", actor: "CVS Pharmacy", location: "Manhattan, NY" },
+    ],
+  },
+  {
+    id: "electronics",
+    name: "Electronics",
+    category: "Electronics",
+    steps: 9,
+    route: "Shenzhen → Long Beach → San Bernardino → San Francisco",
+    description: "Chinese assembly through port shipping, US customs clearance, Amazon fulfillment center, last-mile delivery, and consumer sale via Stripe.",
+    carriers: ["Maersk", "Amazon Logistics"],
+    platforms: ["Stripe"],
+    stages: [
+      { type: "manufactured", actor: "Assembly Line 7", location: "Shenzhen, China" },
+      { type: "inspected", actor: "QC Station", location: "Shenzhen, China" },
+      { type: "shipped", actor: "Maersk Shipping", location: "Shenzhen Port, China" },
+      { type: "received", actor: "Port of Long Beach", location: "Long Beach, CA" },
+      { type: "inspected", actor: "US Customs & Border Protection", location: "Long Beach, CA" },
+      { type: "received", actor: "Amazon Fulfillment Center", location: "San Bernardino, CA" },
+      { type: "shipped", actor: "Amazon Logistics", location: "San Bernardino, CA" },
+      { type: "received", actor: "Local Delivery Station", location: "San Francisco, CA" },
+      { type: "sold", actor: "Amazon.com", location: "San Francisco, CA" },
+    ],
+  },
+];
+
+export async function GET() {
+  return NextResponse.json({
+    journeys: JOURNEYS.map((j) => ({
+      id: j.id,
+      name: j.name,
+      category: j.category,
+      steps: j.steps,
+      route: j.route,
+      description: j.description,
+      carriers: j.carriers,
+      platforms: j.platforms,
+      stages: j.stages,
+    })),
+    count: JOURNEYS.length,
+  });
+}
