@@ -5,6 +5,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [verifyCode, setVerifyCode] = useState("");
+  const [mobileNav, setMobileNav] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -35,12 +36,52 @@ export default function Home() {
               </Link>
               <Link
                 href="/dashboard"
-                className="text-[13px] px-4 py-1.5 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="text-[13px] px-4 py-1.5 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors hidden sm:inline-flex"
+              >
+                Get Started
+              </Link>
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setMobileNav(!mobileNav)}
+                className="sm:hidden p-1 cursor-pointer"
+              >
+                <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  {mobileNav ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
+                  )}
+                </svg>
+              </button>
+            </div>
+          </div>
+          {/* Mobile nav dropdown */}
+          {mobileNav && (
+            <div className="sm:hidden border-t border-border py-3 space-y-1">
+              {[
+                { href: "/explore", label: "Explore" },
+                { href: "/verify", label: "Verify" },
+                { href: "/dashboard", label: "Dashboard" },
+                { href: "/docs", label: "API" },
+              ].map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block px-2 py-2 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setMobileNav(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link
+                href="/dashboard"
+                className="block px-2 py-2 text-[13px] text-primary font-medium"
+                onClick={() => setMobileNav(false)}
               >
                 Get Started
               </Link>
             </div>
-          </div>
+          )}
         </div>
       </nav>
 

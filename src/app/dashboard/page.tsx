@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { ScanAnalytics } from "@/components/scan-heatmap";
+import { ActivityFeed } from "@/components/activity-feed";
 
 interface RegisteredProduct {
   productId: string;
@@ -400,6 +401,14 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
+
+                  {/* Activity Feed */}
+                  <div className="mt-8">
+                    <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+                      Recent Activity
+                    </div>
+                    <ActivityFeed brandId={brandId} />
+                  </div>
                 </div>
               )}
 

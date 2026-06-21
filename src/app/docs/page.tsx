@@ -78,6 +78,55 @@ const ENDPOINTS = [
     body: null,
     response: '{ "found": true, "product": { "productId": "...", "name": "...", "status": "active" } }',
   },
+  {
+    method: "GET",
+    path: "/api/products/certificate?code=abc123",
+    desc: "Export full cryptographic certificate as JSON (product + crypto verification + provenance chain)",
+    body: null,
+    response: '{ "version": "1.0", "product": {...}, "cryptography": {...}, "provenance": {...}, "verification": {...} }',
+  },
+  {
+    method: "GET",
+    path: "/api/brands/list",
+    desc: "List all registered brands",
+    body: null,
+    response: '{ "brands": [{ "id": "...", "name": "...", "domain": "..." }], "count": 3 }',
+  },
+  {
+    method: "GET",
+    path: "/api/brands/stats?brandId=uuid",
+    desc: "Real-time brand statistics (products, scans, threats, status breakdown)",
+    body: null,
+    response: '{ "productCount": 42, "activeProducts": 40, "totalScans": 1250, "unresolvedThreats": 2 }',
+  },
+  {
+    method: "GET",
+    path: "/api/audit?limit=30",
+    desc: "Platform-wide audit log — events, scans, and alerts sorted by time",
+    body: null,
+    response: '{ "entries": [{ "type": "event", "action": "shipped", "actor": "FedEx", "timestamp": "..." }] }',
+  },
+  {
+    method: "GET",
+    path: "/api/explore?limit=50",
+    desc: "Public product gallery — all verified products for consumer browsing",
+    body: null,
+    response: '{ "products": [...], "count": 50 }',
+  },
+  {
+    method: "GET",
+    path: "/api/health",
+    desc: "Platform health check — API status, database connectivity, latency",
+    body: null,
+    response: '{ "status": "operational", "services": { "api": "healthy", "database": "healthy", "dbLatency": "8ms" } }',
+  },
+  {
+    method: "GET",
+    path: "/api/og?brand=X&product=Y",
+    desc: "Dynamic Open Graph image generation for social sharing",
+    body: null,
+    response: "1200x630 PNG image",
+  },
 ];
 
 export default function DocsPage() {
