@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { ScanAnalytics } from "@/components/scan-heatmap";
 import { ActivityFeed } from "@/components/activity-feed";
+import { LiveThreats } from "@/components/live-threats";
 
 interface RegisteredProduct {
   productId: string;
@@ -409,6 +410,11 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
+
+                  {/* Live Threat Feed */}
+                  <div className="mt-8">
+                    <LiveThreats brandId={brandId} />
+                  </div>
 
                   {/* Activity Feed */}
                   <div className="mt-8">
