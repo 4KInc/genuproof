@@ -66,6 +66,7 @@ export interface ThreatAlert {
     | "burst_scan"
     | "scan_velocity"
     | "claimed_product_scan"
+    | "ownership_dispute"
     | "invalid_code"
     | "domain_impersonation";
   severity: "low" | "medium" | "high" | "critical";

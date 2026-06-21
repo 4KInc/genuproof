@@ -50,6 +50,10 @@ export default function VerifyPage() {
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [claimDone, setClaimDone] = useState(false);
+  const [showDispute, setShowDispute] = useState(false);
+  const [disputeForm, setDisputeForm] = useState({ consumerName: "", orderNumber: "", notes: "" });
+  const [disputeSubmitted, setDisputeSubmitted] = useState(false);
+  const [disputeLoading, setDisputeLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState(0);
 
@@ -204,25 +208,115 @@ export default function VerifyPage() {
         {product && authentic && (
           <div className="mb-6 animate-reveal delay-2">
             {result.claim?.claimed ? (
-              <div className={`border p-4 ${
-                result.claim.isClaimant
-                  ? "border-primary/20 bg-primary/3"
-                  : "border-warning/30 bg-warning/5"
-              }`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className={`w-1.5 h-1.5 rounded-full ${result.claim.isClaimant ? "bg-primary" : "bg-warning"}`} />
-                  <span className={`text-[11px] font-medium tracking-wide uppercase ${
-                    result.claim.isClaimant ? "text-primary" : "text-warning"
-                  }`}>
-                    {result.claim.isClaimant ? "Your Product" : "Claimed by Another Consumer"}
-                  </span>
-                </div>
-                <p className="text-[12px] text-muted-foreground ml-3.5">
-                  {result.claim.isClaimant
-                    ? `You registered this product on ${new Date(result.claim.claimedAt!).toLocaleDateString()}. This is your verified purchase.`
-                    : `This product was registered to ${result.claim.claimedBy || "another consumer"} on ${new Date(result.claim.claimedAt!).toLocaleDateString()}. If you purchased this as new, it may have a cloned tag.`
-                  }
-                </p>
+              <div>
+                {result.claim.isClaimant ? (
+                  <div className="border border-primary/20 bg-primary/3 p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      <span className="text-[11px] font-medium tracking-wide uppercase text-primary">Your Product</span>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground ml-3.5">
+                      You registered this product on {new Date(result.claim.claimedAt!).toLocaleDateString()}. This is your verified purchase.
+                    </p>
+                  </div>
+                ) : disputeSubmitted ? (
+                  <div className="border border-primary/20 bg-primary/3 p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                      <span className="text-[11px] font-medium tracking-wide uppercase text-primary">Dispute Submitted</span>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground ml-3.5">
+                      The brand has been notified and will investigate. If you are the legitimate buyer, ownership will be transferred to you.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="border border-amber-300/30 bg-amber-50/50 p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <span className="text-[11px] font-medium tracking-wide uppercase text-amber-700">Previously Registered</span>
+                    </div>
+                    <p className="text-[12px] text-muted-foreground ml-3.5 mb-3">
+                      This product was registered to another device on {new Date(result.claim.claimedAt!).toLocaleDateString()}.
+                      This could mean the product tag was cloned, or the product changed hands. If you are the rightful owner, you can file a dispute.
+                    </p>
+
+                    {!showDispute ? (
+                      <div className="ml-3.5 flex items-center gap-2">
+                        <button
+                          onClick={() => setShowDispute(true)}
+                          className="text-[11px] px-4 py-2 bg-amber-600 text-white font-medium tracking-wide hover:bg-amber-700 transition-colors cursor-pointer"
+                        >
+                          I purchased this product
+                        </button>
+                        <span className="text-[10px] text-muted-foreground">
+                          File a dispute for brand investigation
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="ml-3.5 space-y-3 border-t border-amber-200/50 pt-3">
+                        <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-2">
+                          Dispute Form
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-muted-foreground mb-1 block">Your Name</label>
+                          <input
+                            type="text"
+                            value={disputeForm.consumerName}
+                            onChange={(e) => setDisputeForm({ ...disputeForm, consumerName: e.target.value })}
+                            placeholder="e.g. Jane Smith"
+                            className="w-full px-3 py-2 text-[12px] bg-white border border-border focus:outline-none focus:border-primary/50"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-muted-foreground mb-1 block">Order / Receipt Number</label>
+                          <input
+                            type="text"
+                            value={disputeForm.orderNumber}
+                            onChange={(e) => setDisputeForm({ ...disputeForm, orderNumber: e.target.value })}
+                            placeholder="e.g. ORD-2026-12345"
+                            className="w-full px-3 py-2 text-[12px] bg-white border border-border focus:outline-none focus:border-primary/50 font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-muted-foreground mb-1 block">Additional Details</label>
+                          <textarea
+                            value={disputeForm.notes}
+                            onChange={(e) => setDisputeForm({ ...disputeForm, notes: e.target.value })}
+                            placeholder="Where and when did you purchase this product?"
+                            rows={2}
+                            className="w-full px-3 py-2 text-[12px] bg-white border border-border focus:outline-none focus:border-primary/50 resize-none"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={async () => {
+                              setDisputeLoading(true);
+                              try {
+                                const res = await fetch("/api/products/dispute", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ productId: product.productId, ...disputeForm }),
+                                });
+                                if (res.ok) setDisputeSubmitted(true);
+                              } catch { /* silent */ }
+                              finally { setDisputeLoading(false); }
+                            }}
+                            disabled={disputeLoading || !disputeForm.consumerName}
+                            className="text-[11px] px-4 py-2 bg-amber-600 text-white font-medium tracking-wide hover:bg-amber-700 transition-colors disabled:opacity-50 cursor-pointer"
+                          >
+                            {disputeLoading ? "Submitting..." : "Submit Dispute"}
+                          </button>
+                          <button
+                            onClick={() => setShowDispute(false)}
+                            className="text-[11px] px-3 py-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : claimDone ? (
               <div className="border border-primary/20 bg-primary/3 p-4">
