@@ -99,9 +99,9 @@ export default function ExplorePage() {
             <p className="text-[13px] text-muted-foreground">No products found.</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((p) => (
-              <div key={p.productId} className="bg-background p-6 group">
+              <div key={p.productId} className="border border-border bg-card p-6 group">
                 <div className="flex items-start justify-between mb-3">
                   <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground">
                     {p.brandName}
