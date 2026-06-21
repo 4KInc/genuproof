@@ -34,7 +34,7 @@ interface ThreatAlert {
   resolved: boolean;
 }
 
-const TABS = ["register", "products", "provenance", "threats", "overview"] as const;
+const TABS = ["overview", "register", "products", "provenance", "threats"] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, string> = {
   register: "Register",
@@ -195,7 +195,7 @@ export default function Dashboard() {
     setBrandId(brand.id);
     setBrandName(brand.name);
     setBrandRegistered(true);
-    setActiveTab("products");
+    setActiveTab("overview");
     loadBrandProducts(brand.id);
     loadBrandStats(brand.id);
   };
@@ -252,12 +252,20 @@ export default function Dashboard() {
               <div>Products: {products.length}</div>
               <div className="font-mono">{brandId.slice(0, 8)}...</div>
             </div>
-            <button
-              onClick={() => { setBrandRegistered(false); setProducts([]); setThreats([]); setShowNewBrandForm(false); }}
-              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Switch brand
-            </button>
+            <div className="flex flex-col gap-1">
+              <Link href="/analytics" className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+                Analytics
+              </Link>
+              <Link href="/explore" className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+                Explore
+              </Link>
+              <button
+                onClick={() => { setBrandRegistered(false); setProducts([]); setThreats([]); setShowNewBrandForm(false); }}
+                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors text-left cursor-pointer"
+              >
+                Switch brand
+              </button>
+            </div>
           </div>
         </aside>
       )}
