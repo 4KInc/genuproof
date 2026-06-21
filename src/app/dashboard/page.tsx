@@ -10,6 +10,18 @@ interface RegisteredProduct {
   hash: string;
   verifyUrl: string;
   name: string;
+  status?: string;
+  scanCount?: number;
+  category?: string;
+  sku?: string;
+}
+
+interface BrandStats {
+  productCount: number;
+  activeProducts: number;
+  recalledProducts: number;
+  totalScans: number;
+  unresolvedThreats: number;
 }
 
 interface ThreatAlert {
@@ -58,6 +70,7 @@ export default function Dashboard() {
 
   const [products, setProducts] = useState<RegisteredProduct[]>([]);
   const [threats, setThreats] = useState<ThreatAlert[]>([]);
+  const [stats, setStats] = useState<BrandStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -128,10 +141,54 @@ export default function Dashboard() {
           hash: p.hash as string,
           verifyUrl: "",
           name: p.name as string,
+          status: p.status as string,
+          scanCount: p.scanCount as number,
+          category: p.category as string,
+          sku: p.sku as string,
         })));
       }
     } catch { /* silent */ }
   }, []);
+
+  const loadBrandStats = useCallback(async (bid: string) => {
+    try {
+      const res = await fetch(`/api/brands/stats?brandId=${bid}`);
+      const data = await res.json();
+      if (res.ok) setStats(data);
+    } catch { /* silent */ }
+  }, []);
+
+  const recallProduct = async (productId: string, productName: string) => {
+    const reason = prompt(`Recall reason for "${productName}":`);
+    if (!reason) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/products/recall", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, reason, issuedBy: brandName }) });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ type: "success", text: `Product recalled. Hash: ${data.hash.slice(0, 16)}...` });
+        setProducts(p => p.map(pr => pr.productId === productId ? { ...pr, status: "recalled" } : pr));
+        fetchThreats();
+      } else setMessage({ type: "error", text: data.error });
+    } catch { setMessage({ type: "error", text: "Recall failed" }); }
+    finally { setLoading(false); }
+  };
+
+  const transferProduct = async (productId: string, productName: string) => {
+    const newOwner = prompt(`Transfer "${productName}" to (new owner name):`);
+    if (!newOwner) return;
+    const location = prompt("Transfer location (optional):") || undefined;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/products/transfer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, newOwner, location }) });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({ type: "success", text: `Transferred to ${newOwner}. Hash: ${data.hash.slice(0, 16)}...` });
+        setProducts(p => p.map(pr => pr.productId === productId ? { ...pr, status: "transferred" } : pr));
+      } else setMessage({ type: "error", text: data.error });
+    } catch { setMessage({ type: "error", text: "Transfer failed" }); }
+    finally { setLoading(false); }
+  };
 
   const selectBrand = (brand: ExistingBrand) => {
     setBrandId(brand.id);
@@ -139,6 +196,7 @@ export default function Dashboard() {
     setBrandRegistered(true);
     setActiveTab("products");
     loadBrandProducts(brand.id);
+    loadBrandStats(brand.id);
   };
 
   const copyCode = (code: string) => { navigator.clipboard.writeText(code); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
@@ -258,7 +316,7 @@ export default function Dashboard() {
                       <button
                         key={brand.id}
                         onClick={() => selectBrand(brand)}
-                        className="w-full text-left py-4 border-b border-border hover:bg-secondary/30 transition-colors group px-1 -mx-1"
+                        className="w-full text-left py-4 border-b border-border hover:bg-secondary/30 transition-colors group px-1 -mx-1 cursor-pointer"
                       >
                         <div className="flex items-center justify-between">
                           <div>
@@ -322,7 +380,26 @@ export default function Dashboard() {
               {activeTab === "overview" && (
                 <div>
                   <h2 className="font-[family-name:var(--font-display)] text-2xl mb-6">Overview</h2>
-                  <ScanAnalytics scans={[]} threats={threats} totalScans={0} totalProducts={products.length} />
+                  <ScanAnalytics
+                    scans={[]}
+                    threats={threats}
+                    totalScans={stats?.totalScans || 0}
+                    totalProducts={stats?.productCount || products.length}
+                  />
+                  {stats && (
+                    <div className="grid grid-cols-3 gap-px bg-border mt-6">
+                      {[
+                        { label: "Active", value: stats.activeProducts },
+                        { label: "Recalled", value: stats.recalledProducts },
+                        { label: "Alerts", value: stats.unresolvedThreats },
+                      ].map((s) => (
+                        <div key={s.label} className="bg-background p-4">
+                          <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-0.5">{s.label}</div>
+                          <div className="font-[family-name:var(--font-display)] text-xl">{s.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -359,24 +436,45 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     <div className="border-t border-border">
-                      {products.map(p => (
-                        <div key={p.productId} className="py-4 border-b border-border flex items-start justify-between gap-4 group hover:bg-secondary/20 transition-colors px-1 -mx-1">
-                          <div className="min-w-0">
-                            <div className="text-[14px] font-medium">{p.name}</div>
-                            <div className="flex items-center gap-3 mt-1.5">
-                              <button onClick={() => copyCode(p.verificationCode)} className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors">
-                                {copiedCode === p.verificationCode ? "Copied" : p.verificationCode}
-                              </button>
-                              <span className="text-[10px] font-mono text-muted-foreground/40 truncate max-w-[160px]">{p.hash}</span>
+                      {products.map(p => {
+                      const statusColor = p.status === "active" ? "text-primary bg-primary/5 border-primary/20"
+                        : p.status === "recalled" ? "text-destructive bg-destructive/5 border-destructive/20"
+                        : "text-accent bg-accent/5 border-accent/20";
+                      return (
+                        <div key={p.productId} className="py-4 border-b border-border hover:bg-secondary/20 transition-colors px-1 -mx-1">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[14px] font-medium">{p.name}</span>
+                                <span className={`text-[9px] tracking-wide uppercase font-medium px-1.5 py-0.5 border ${statusColor}`}>
+                                  {p.status || "active"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 mt-1.5">
+                                <button onClick={() => copyCode(p.verificationCode)} className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                                  {copiedCode === p.verificationCode ? "Copied" : p.verificationCode}
+                                </button>
+                                {p.sku && <span className="text-[10px] text-muted-foreground/50">{p.sku}</span>}
+                                {p.category && <span className="text-[10px] text-muted-foreground/50">{p.category}</span>}
+                                {(p.scanCount ?? 0) > 0 && <span className="text-[10px] text-muted-foreground/50">{p.scanCount} scans</span>}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                              <Link href={`/verify/${p.verificationCode}`} className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">Verify</Link>
+                              <Link href={`/qr/${p.verificationCode}`} className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">QR</Link>
+                              <Link href={`/product/${p.productId}`} className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">Detail</Link>
+                              <a href={`/api/products/certificate?code=${p.verificationCode}`} target="_blank" className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">JSON</a>
+                              {p.status === "active" && (
+                                <>
+                                  <button onClick={() => transferProduct(p.productId, p.name)} disabled={loading} className="text-[10px] px-2.5 py-1 border border-accent/30 text-accent hover:bg-accent/5 transition-colors cursor-pointer">Transfer</button>
+                                  <button onClick={() => recallProduct(p.productId, p.name)} disabled={loading} className="text-[10px] px-2.5 py-1 border border-destructive/30 text-destructive hover:bg-destructive/5 transition-colors cursor-pointer">Recall</button>
+                                </>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <Link href={`/verify/${p.verificationCode}`} className="text-[11px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors">Verify</Link>
-                            <a href={`/qr/${p.verificationCode}`} className="text-[11px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors">QR</a>
-                            <Link href={`/product/${p.productId}`} className="text-[11px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors">Detail</Link>
-                          </div>
                         </div>
-                      ))}
+                      );
+                    })}
                     </div>
                   )}
                 </div>
