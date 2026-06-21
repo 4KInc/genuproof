@@ -29,7 +29,7 @@ export async function GET() {
       dbLatency: `${latency}ms`,
     },
     version: "1.0.0",
-    endpoints: 15,
-    pages: 11,
+    endpoints: 25,
+    pages: 14,
   });
 }

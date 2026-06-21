@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   const [verifyCode, setVerifyCode] = useState("");
@@ -34,6 +35,7 @@ export default function Home() {
               <Link href="/docs" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
                 API
               </Link>
+              <ThemeToggle />
               <Link
                 href="/dashboard"
                 className="text-[13px] px-4 py-1.5 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors hidden sm:inline-flex"
@@ -368,8 +370,11 @@ export default function Home() {
             </div>
             Authentik
           </div>
-          <div className="text-[11px] text-muted-foreground/60">
-            Next.js &middot; DynamoDB &middot; Vercel &middot; SHA-256 &middot; HMAC
+          <div className="flex items-center gap-4">
+            <Link href="/status" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">Status</Link>
+            <Link href="/compare" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">Compare</Link>
+            <Link href="/analytics" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">Analytics</Link>
+            <Link href="/docs" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">API</Link>
           </div>
         </div>
       </footer>

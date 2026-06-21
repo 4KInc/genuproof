@@ -20,6 +20,24 @@
   --font-display: "Instrument Serif", Georgia, serif;
 }
 
+.dark {
+  --background: #111110;
+  --foreground: #e8e4dc;
+  --card: #1a1918;
+  --card-foreground: #e8e4dc;
+  --primary: #2d9d6f;
+  --primary-foreground: #111110;
+  --secondary: #1e1d1c;
+  --secondary-foreground: #e8e4dc;
+  --accent: #d4a843;
+  --muted: #252423;
+  --muted-foreground: #8a857c;
+  --border: #2a2928;
+  --destructive: #dc4444;
+  --success: #2d9d6f;
+  --warning: #d4a843;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
