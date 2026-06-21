@@ -435,10 +435,49 @@ export default function Dashboard() {
                     <div><label className={labelClass}>Product Name *</label><input type="text" value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} placeholder="e.g. Classic Chronograph 42mm" className={inputClass} /></div>
                     <div className="grid grid-cols-2 gap-4">
                       <div><label className={labelClass}>SKU</label><input type="text" value={productForm.sku} onChange={e => setProductForm({...productForm, sku: e.target.value})} placeholder="LW-CC-42" className={`${inputClass} font-mono`} /></div>
-                      <div><label className={labelClass}>Category</label><input type="text" value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} placeholder="Watches" className={inputClass} /></div>
+                      <div>
+                        <label className={labelClass}>Category</label>
+                        <select value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} className={inputClass}>
+                          <option value="">Select category</option>
+                          <option value="Watches">Watches</option>
+                          <option value="Handbags">Handbags</option>
+                          <option value="Jewelry">Jewelry</option>
+                          <option value="Eyewear">Eyewear</option>
+                          <option value="Fragrances">Fragrances</option>
+                          <option value="Footwear">Footwear</option>
+                          <option value="Clothing">Clothing</option>
+                          <option value="Electronics">Electronics</option>
+                          <option value="Pharmaceuticals">Pharmaceuticals</option>
+                          <option value="Wine & Spirits">Wine & Spirits</option>
+                          <option value="Art">Art</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
                     </div>
                     <div><label className={labelClass}>Description</label><textarea value={productForm.description} onChange={e => setProductForm({...productForm, description: e.target.value})} placeholder="Product description..." rows={2} className={`${inputClass} resize-none`} /></div>
-                    <div><label className={labelClass}>Manufacturing Location</label><input type="text" value={productForm.manufacturingLocation} onChange={e => setProductForm({...productForm, manufacturingLocation: e.target.value})} placeholder="Geneva, Switzerland" className={inputClass} /></div>
+                    <div>
+                      <label className={labelClass}>Manufacturing Location</label>
+                      <select value={productForm.manufacturingLocation} onChange={e => setProductForm({...productForm, manufacturingLocation: e.target.value})} className={inputClass}>
+                        <option value="">Select location</option>
+                        <option value="Geneva, Switzerland">Geneva, Switzerland</option>
+                        <option value="Le Brassus, Switzerland">Le Brassus, Switzerland</option>
+                        <option value="Le Locle, Switzerland">Le Locle, Switzerland</option>
+                        <option value="La Chaux-de-Fonds, Switzerland">La Chaux-de-Fonds, Switzerland</option>
+                        <option value="Florence, Italy">Florence, Italy</option>
+                        <option value="Valenza, Italy">Valenza, Italy</option>
+                        <option value="Belluno, Italy">Belluno, Italy</option>
+                        <option value="Milan, Italy">Milan, Italy</option>
+                        <option value="Paris, France">Paris, France</option>
+                        <option value="Grasse, France">Grasse, France</option>
+                        <option value="Ubrique, Spain">Ubrique, Spain</option>
+                        <option value="London, United Kingdom">London, United Kingdom</option>
+                        <option value="Munich, Germany">Munich, Germany</option>
+                        <option value="Tokyo, Japan">Tokyo, Japan</option>
+                        <option value="Shenzhen, China">Shenzhen, China</option>
+                        <option value="New York, NY">New York, NY</option>
+                        <option value="Los Angeles, CA">Los Angeles, CA</option>
+                      </select>
+                    </div>
                     <button onClick={registerProduct} disabled={loading || !productForm.name} className={btnClass}>
                       {loading ? "Registering..." : "Register Product"}
                     </button>
@@ -524,8 +563,73 @@ export default function Dashboard() {
                         {["shipped","received","inspected","sold","transferred","recalled","custom"].map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
                       </select>
                     </div>
-                    <div><label className={labelClass}>Actor / Handler</label><input type="text" value={eventForm.actor} onChange={e => setEventForm({...eventForm, actor: e.target.value})} placeholder="e.g. FedEx Express" className={inputClass} /></div>
-                    <div><label className={labelClass}>Location</label><input type="text" value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} placeholder="e.g. New York, NY" className={inputClass} /></div>
+                    <div>
+                      <label className={labelClass}>Actor / Handler</label>
+                      <select value={eventForm.actor} onChange={e => setEventForm({...eventForm, actor: e.target.value})} className={inputClass}>
+                        <option value="">Select handler</option>
+                        <optgroup label="Shipping Carriers">
+                          <option value="FedEx Express">FedEx Express</option>
+                          <option value="FedEx International Priority">FedEx International Priority</option>
+                          <option value="DHL Express">DHL Express</option>
+                          <option value="DHL International">DHL International</option>
+                          <option value="UPS Worldwide">UPS Worldwide</option>
+                          <option value="Swiss Post International">Swiss Post International</option>
+                          <option value="Chronopost France">Chronopost France</option>
+                          <option value="Maersk Shipping">Maersk Shipping</option>
+                        </optgroup>
+                        <optgroup label="Warehouses & Distribution">
+                          <option value="US Distribution Center">US Distribution Center</option>
+                          <option value="EU Distribution Hub">EU Distribution Hub</option>
+                          <option value="Quality Control Team">Quality Control Team</option>
+                          <option value="COSC Certification Body">COSC Certification Body</option>
+                          <option value="Customs Authority">Customs Authority</option>
+                          <option value="US Customs & Border Protection">US Customs & Border Protection</option>
+                        </optgroup>
+                        <optgroup label="Retailers">
+                          <option value="Authorized Retailer">Authorized Retailer</option>
+                          <option value="Fifth Avenue Boutique">Fifth Avenue Boutique</option>
+                          <option value="Rodeo Drive Boutique">Rodeo Drive Boutique</option>
+                          <option value="Ginza Premium Store">Ginza Premium Store</option>
+                          <option value="Dubai Mall Flagship">Dubai Mall Flagship</option>
+                          <option value="Online Store">Online Store</option>
+                        </optgroup>
+                      </select>
+                    </div>
+                    <div>
+                      <label className={labelClass}>Location</label>
+                      <select value={eventForm.location} onChange={e => setEventForm({...eventForm, location: e.target.value})} className={inputClass}>
+                        <option value="">Select location</option>
+                        <optgroup label="Switzerland">
+                          <option value="Geneva, Switzerland">Geneva, Switzerland</option>
+                          <option value="Le Brassus, Switzerland">Le Brassus, Switzerland</option>
+                          <option value="Le Locle, Switzerland">Le Locle, Switzerland</option>
+                        </optgroup>
+                        <optgroup label="Europe">
+                          <option value="Florence, Italy">Florence, Italy</option>
+                          <option value="Milan, Italy">Milan, Italy</option>
+                          <option value="Paris, France">Paris, France</option>
+                          <option value="Frankfurt, Germany">Frankfurt, Germany</option>
+                          <option value="London, United Kingdom">London, United Kingdom</option>
+                        </optgroup>
+                        <optgroup label="United States">
+                          <option value="New York, NY">New York, NY</option>
+                          <option value="Newark, NJ">Newark, NJ</option>
+                          <option value="Memphis, TN">Memphis, TN</option>
+                          <option value="Los Angeles, CA">Los Angeles, CA</option>
+                          <option value="Beverly Hills, CA">Beverly Hills, CA</option>
+                          <option value="San Francisco, CA">San Francisco, CA</option>
+                          <option value="Miami, FL">Miami, FL</option>
+                          <option value="Chicago, IL">Chicago, IL</option>
+                        </optgroup>
+                        <optgroup label="Asia & Middle East">
+                          <option value="Tokyo, Japan">Tokyo, Japan</option>
+                          <option value="Dubai, UAE">Dubai, UAE</option>
+                          <option value="Singapore">Singapore</option>
+                          <option value="Hong Kong">Hong Kong</option>
+                          <option value="Shenzhen, China">Shenzhen, China</option>
+                        </optgroup>
+                      </select>
+                    </div>
                     <button onClick={addEvent} disabled={loading || !eventForm.productId || !eventForm.actor} className={btnClass}>
                       {loading ? "Adding..." : "Add Event to Chain"}
                     </button>
