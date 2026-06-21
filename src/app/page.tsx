@@ -35,6 +35,9 @@ export default function Home() {
               <Link href="/docs" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
                 API
               </Link>
+              <Link href="/integrations" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+                Integrations
+              </Link>
               <ThemeToggle />
               <Link
                 href="/dashboard"
