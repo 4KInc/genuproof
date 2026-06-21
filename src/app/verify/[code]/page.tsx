@@ -282,6 +282,40 @@ export default function VerifyPage() {
           </div>
         )}
 
+        {/* Actions bar */}
+        {product && (
+          <div className="mt-8 flex items-center gap-2 animate-reveal delay-4">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                alert("Verification URL copied to clipboard");
+              }}
+              className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors cursor-pointer"
+            >
+              Share result
+            </button>
+            <a
+              href={`/api/products/certificate?code=${code}`}
+              target="_blank"
+              className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+            >
+              Export JSON
+            </a>
+            <Link
+              href={`/qr/${code}`}
+              className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+            >
+              QR Certificate
+            </Link>
+            <Link
+              href={`/product/${product.productId}`}
+              className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+            >
+              Full details
+            </Link>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="mt-10 pt-6 border-t border-border flex items-center justify-between">
           <Link href="/" className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">

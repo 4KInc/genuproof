@@ -21,6 +21,9 @@ export default function Home() {
               <span className="text-sm font-medium tracking-wide uppercase">Authentik</span>
             </Link>
             <div className="flex items-center gap-6">
+              <Link href="/explore" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+                Explore
+              </Link>
               <Link href="/verify" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
                 Verify
               </Link>

@@ -35,13 +35,17 @@ export default function ProductPage() {
   const id = params.id as string;
   const [product, setProduct] = useState<ProductData | null>(null);
   const [events, setEvents] = useState<EventData[]>([]);
+  const [scans, setScans] = useState<Array<{ timestamp: string; country: string; city: string; result: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [showScans, setShowScans] = useState(false);
 
   useEffect(() => {
     async function load() {
       try {
-        // Fetch product via verify endpoint using productId
-        const verifyRes = await fetch(`/api/products/verify?productId=${id}`);
+        const [verifyRes, scansRes] = await Promise.all([
+          fetch(`/api/products/verify?productId=${id}`),
+          fetch(`/api/scans?productId=${id}&limit=20`),
+        ]);
         const verifyData = await verifyRes.json();
         if (verifyData.product) {
           setProduct({
@@ -50,6 +54,9 @@ export default function ProductPage() {
           });
         }
         if (verifyData.events) setEvents(verifyData.events);
+
+        const scansData = await scansRes.json();
+        if (scansData.scans) setScans(scansData.scans);
       } catch {
         // silent
       } finally {
@@ -226,9 +233,63 @@ export default function ProductPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                 </svg>
               </Link>
+              <a
+                href={`/api/products/certificate?productId=${product.productId}`}
+                target="_blank"
+                className="flex items-center justify-between py-2.5 px-3 border border-border hover:bg-secondary transition-colors text-[12px] group"
+              >
+                <span>Export JSON certificate</span>
+                <svg className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+              </a>
             </div>
           </div>
         </div>
+
+        {/* Scan History */}
+        {scans.length > 0 && (
+          <div className="mb-8">
+            <button
+              onClick={() => setShowScans(!showScans)}
+              className="flex items-center justify-between w-full mb-4 cursor-pointer"
+            >
+              <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground">
+                Scan History
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-muted-foreground">{scans.length} scans</span>
+                <svg className={`w-3 h-3 text-muted-foreground transition-transform ${showScans ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </div>
+            </button>
+            {showScans && (
+              <div className="border border-border bg-card">
+                <div className="grid grid-cols-4 gap-px bg-border text-[9px] tracking-[0.15em] uppercase text-muted-foreground">
+                  <div className="bg-secondary/50 px-3 py-2">Time</div>
+                  <div className="bg-secondary/50 px-3 py-2">Location</div>
+                  <div className="bg-secondary/50 px-3 py-2">Country</div>
+                  <div className="bg-secondary/50 px-3 py-2">Result</div>
+                </div>
+                {scans.map((scan, i) => (
+                  <div key={i} className="grid grid-cols-4 gap-px bg-border text-[11px]">
+                    <div className="bg-background px-3 py-2 font-mono text-muted-foreground tabular-nums">
+                      {new Date(scan.timestamp).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                    <div className="bg-background px-3 py-2 text-muted-foreground">{scan.city}</div>
+                    <div className="bg-background px-3 py-2 text-muted-foreground">{scan.country}</div>
+                    <div className="bg-background px-3 py-2">
+                      <span className={`text-[10px] font-medium ${scan.result === "authentic" ? "text-primary" : "text-destructive"}`}>
+                        {scan.result}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Provenance Chain */}
         {events.length > 0 && (
