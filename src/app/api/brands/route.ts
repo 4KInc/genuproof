@@ -41,7 +41,16 @@ export async function POST(req: NextRequest) {
       threatCount: 0,
     };
 
-    await Promise.all([putItem(brand), putItem(stats)]);
+    // BRAND_INDEX entry enables Query-based brand listing (no Scan)
+    const brandIndex = {
+      PK: "BRAND_INDEX",
+      SK: `BRAND#${now}#${brandId}`,
+      brandId, name, domain, industry,
+      plan: "free",
+      createdAt: now,
+    };
+
+    await Promise.all([putItem(brand), putItem(stats), putItem(brandIndex)]);
 
     return NextResponse.json({
       id: brandId,

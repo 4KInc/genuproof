@@ -1,40 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { queryItems } from "@/lib/dynamodb";
 
-const client = new DynamoDBClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  ...(process.env.AWS_ACCESS_KEY_ID && {
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  }),
-});
-const ddb = DynamoDBDocumentClient.from(client);
-const TABLE = process.env.DYNAMODB_TABLE || "authentik";
+// Audit log — queries AUDIT_LOG collection key instead of table Scan
+// Every write operation also writes to AUDIT_LOG / timestamp#type for O(1) retrieval
 
 export async function GET(req: NextRequest) {
   try {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "30");
 
-    // Scan for recent events across all products
-    const result = await ddb.send(
-      new ScanCommand({
-        TableName: TABLE,
-        FilterExpression: "begins_with(SK, :eventPrefix) OR begins_with(SK, :scanPrefix) OR begins_with(SK, :alertPrefix)",
-        ExpressionAttributeValues: {
-          ":eventPrefix": "EVENT#",
-          ":scanPrefix": "SCAN#",
-          ":alertPrefix": "ALERT#",
-        },
-        Limit: limit * 5,
-      })
-    );
+    // Query the audit log collection — avoids table Scan
+    let items = await queryItems("AUDIT_LOG", undefined, {
+      limit: limit * 2,
+      scanForward: false,
+    });
 
-    const items = (result.Items || [])
+    // Fallback: query recent events from known products via PRODUCT_INDEX
+    if (items.length === 0) {
+      const products = await queryItems("PRODUCT_INDEX", "PRODUCT#", {
+        limit: 10,
+        scanForward: false,
+      });
+
+      const eventResults = await Promise.all(
+        products.map((p) =>
+          queryItems(`PRODUCT#${p.productId}`, "EVENT#", {
+            limit: 5,
+            scanForward: false,
+          })
+        )
+      );
+
+      const scanResults = await Promise.all(
+        products.map((p) =>
+          queryItems(`PRODUCT#${p.productId}`, "SCAN#", {
+            limit: 5,
+            scanForward: false,
+          })
+        )
+      );
+
+      items = [...eventResults.flat(), ...scanResults.flat()];
+    }
+
+    const entries = items
       .map((item) => {
-        const sk = item.SK as string;
+        const sk = (item.SK as string) || "";
         if (sk.startsWith("EVENT#")) {
           return {
             type: "event" as const,
@@ -43,7 +53,7 @@ export async function GET(req: NextRequest) {
             productId: item.productId as string,
             location: item.location as string | null,
             timestamp: item.timestamp as string,
-            hash: (item.hash as string)?.slice(0, 12),
+            hash: ((item.hash as string) || "").slice(0, 12),
           };
         } else if (sk.startsWith("SCAN#")) {
           return {
@@ -51,7 +61,7 @@ export async function GET(req: NextRequest) {
             action: "verification_scan",
             actor: null,
             productId: item.productId as string,
-            location: `${item.city}, ${item.country}`,
+            location: item.city && item.country ? `${item.city}, ${item.country}` : null,
             timestamp: item.timestamp as string,
             hash: null,
             result: item.result as string,
@@ -59,9 +69,9 @@ export async function GET(req: NextRequest) {
         } else {
           return {
             type: "alert" as const,
-            action: item.type as string,
+            action: (item.type as string) || "unknown",
             actor: null,
-            productId: item.productId as string | null,
+            productId: (item.productId as string) || null,
             location: null,
             timestamp: item.timestamp as string,
             hash: null,
@@ -70,13 +80,14 @@ export async function GET(req: NextRequest) {
           };
         }
       })
+      .filter((e) => e.timestamp)
       .sort(
         (a, b) =>
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       )
       .slice(0, limit);
 
-    return NextResponse.json({ entries: items, count: items.length });
+    return NextResponse.json({ entries, count: entries.length });
   } catch (error) {
     console.error("Audit log error:", error);
     return NextResponse.json({ error: "Failed to load audit log" }, { status: 500 });

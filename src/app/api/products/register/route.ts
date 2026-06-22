@@ -101,12 +101,29 @@ export async function POST(req: NextRequest) {
       previousHash: sha256(""),
     };
 
+    // PRODUCT_INDEX entry enables Query-based explore/analytics (no Scan)
+    const productIndex = {
+      PK: "PRODUCT_INDEX",
+      SK: `PRODUCT#${now}#${productId}`,
+      productId, brandId, name,
+      brandName: brand.name as string,
+      sku: sku || null,
+      category: category || null,
+      description: description || null,
+      status: "active",
+      verificationCode,
+      hash,
+      createdAt: now,
+      scanCount: 0,
+    };
+
     // Write all items
     await Promise.all([
       putItem(product),
       putItem(codeLookup),
       putItem(hashLookup),
       putItem(genesisEvent),
+      putItem(productIndex),
       incrementCounter(`BRAND#${brandId}`, "STATS", "productCount"),
     ]);
 

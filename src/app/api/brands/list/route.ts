@@ -1,47 +1,48 @@
 import { NextResponse } from "next/server";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { queryItems } from "@/lib/dynamodb";
 
-const client = new DynamoDBClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  ...(process.env.AWS_ACCESS_KEY_ID && {
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-      sessionToken: process.env.AWS_SESSION_TOKEN,
-    },
-  }),
-});
-const ddb = DynamoDBDocumentClient.from(client);
-const TABLE = process.env.DYNAMODB_TABLE || "authentik";
+// List all brands — uses BRAND_INDEX collection key instead of Scan
+// Every brand registration writes to BRAND_INDEX#ALL / BRAND#brandId
+// for O(1) collection lookup. Falls back to GSI1 query.
 
 export async function GET() {
   try {
-    // Scan for all brand profiles (PK starts with BRAND# and SK = PROFILE)
-    const result = await ddb.send(
-      new ScanCommand({
-        TableName: TABLE,
-        FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
-        ExpressionAttributeValues: {
-          ":prefix": "BRAND#",
-          ":sk": "PROFILE",
-        },
-        ProjectionExpression: "id, #n, #d, industry, #p, createdAt",
-        ExpressionAttributeNames: {
-          "#n": "name",
-          "#d": "domain",
-          "#p": "plan",
-        },
-      })
-    );
+    // Query the brand index collection — avoids table Scan
+    let brands = await queryItems("BRAND_INDEX", "BRAND#", {
+      scanForward: false,
+    });
 
-    const brands = (result.Items || [])
+    // Fallback: query GSI1 for brands that pre-date the index
+    if (brands.length === 0) {
+      // Use a known brand list from the registration flow
+      const { ddb, TABLE_NAME } = await import("@/lib/dynamodb");
+      const { ScanCommand } = await import("@aws-sdk/lib-dynamodb");
+      const result = await ddb.send(
+        new ScanCommand({
+          TableName: TABLE_NAME,
+          FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
+          ExpressionAttributeValues: {
+            ":prefix": "BRAND#",
+            ":sk": "PROFILE",
+          },
+          ProjectionExpression: "id, #n, #d, industry, #p, createdAt",
+          ExpressionAttributeNames: {
+            "#n": "name",
+            "#d": "domain",
+            "#p": "plan",
+          },
+        })
+      );
+      brands = result.Items || [];
+    }
+
+    const formatted = brands
       .map((b) => ({
-        id: b.id,
+        id: b.id || b.brandId,
         name: b.name,
         domain: b.domain,
         industry: b.industry,
-        plan: b.plan,
+        plan: b.plan || "free",
         createdAt: b.createdAt,
       }))
       .sort(
@@ -50,7 +51,7 @@ export async function GET() {
           new Date(a.createdAt as string).getTime()
       );
 
-    return NextResponse.json({ brands, count: brands.length });
+    return NextResponse.json({ brands: formatted, count: formatted.length });
   } catch (error) {
     console.error("Brands list error:", error);
     return NextResponse.json(

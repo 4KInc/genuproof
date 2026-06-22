@@ -1,39 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { queryItems, queryGSI1 } from "@/lib/dynamodb";
 
-const client = new DynamoDBClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  ...(process.env.AWS_ACCESS_KEY_ID && {
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  }),
-});
-const ddb = DynamoDBDocumentClient.from(client);
-const TABLE = process.env.DYNAMODB_TABLE || "authentik";
+// Public product listing — uses PRODUCT_INDEX collection key (no Scan)
+// Every product registration writes to PRODUCT_INDEX / PRODUCT#timestamp
 
 export async function GET(req: NextRequest) {
   try {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
     const status = req.nextUrl.searchParams.get("status") || "active";
 
-    const result = await ddb.send(
-      new ScanCommand({
-        TableName: TABLE,
-        FilterExpression: "begins_with(PK, :prefix) AND SK = :sk AND #s = :status",
-        ExpressionAttributeValues: {
-          ":prefix": "PRODUCT#",
-          ":sk": "META",
-          ":status": status,
-        },
-        ExpressionAttributeNames: { "#s": "status" },
-        Limit: limit * 3, // overscan for filter
-      })
-    );
+    // Query the product index — avoids table Scan
+    let items = await queryItems("PRODUCT_INDEX", "PRODUCT#", {
+      limit: limit * 2,
+      scanForward: false,
+    });
 
-    const products = (result.Items || [])
+    // Fallback: legacy Scan for pre-index data
+    if (items.length === 0) {
+      const { ddb, TABLE_NAME } = await import("@/lib/dynamodb");
+      const { ScanCommand } = await import("@aws-sdk/lib-dynamodb");
+      const result = await ddb.send(
+        new ScanCommand({
+          TableName: TABLE_NAME,
+          FilterExpression: "begins_with(PK, :prefix) AND SK = :sk AND #s = :status",
+          ExpressionAttributeValues: {
+            ":prefix": "PRODUCT#",
+            ":sk": "META",
+            ":status": status,
+          },
+          ExpressionAttributeNames: { "#s": "status" },
+          Limit: limit * 3,
+        })
+      );
+      items = result.Items || [];
+    }
+
+    const products = items
+      .filter((p) => (p.status || "active") === status)
       .slice(0, limit)
       .map((p) => ({
         productId: p.productId,
@@ -42,17 +45,12 @@ export async function GET(req: NextRequest) {
         sku: p.sku,
         category: p.category,
         description: p.description,
-        status: p.status,
+        status: p.status || "active",
         verificationCode: p.verificationCode,
-        hash: (p.hash as string).slice(0, 16) + "...",
+        hash: ((p.hash as string) || "").slice(0, 16) + "...",
         createdAt: p.createdAt,
         scanCount: p.scanCount || 0,
-      }))
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt as string).getTime() -
-          new Date(a.createdAt as string).getTime()
-      );
+      }));
 
     return NextResponse.json({ products, count: products.length });
   } catch (error) {

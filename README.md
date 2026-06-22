@@ -54,20 +54,64 @@ AWS Lambda (authentik-threat-detector)        │
 
 ### DynamoDB Single-Table Design
 
-| PK | SK | Purpose |
+**Table:** `authentik` · **Region:** us-east-1 · **Billing:** PAY_PER_REQUEST · **Streams:** NEW_IMAGE
+
+#### Entity Schema (PK/SK Patterns)
+
+| PK | SK | Purpose | Write Sharding |
+|---|---|---|---|
+| `BRAND#id` | `PROFILE` | Brand record | Per-brand partition |
+| `BRAND#id` | `STATS` | Aggregate counters (atomic increment) | Per-brand partition |
+| `BRAND#id` | `WEBHOOK#id` | Webhook configuration | Per-brand partition |
+| `PRODUCT#id` | `META` | Product + SHA-256 hash + HMAC signature | Per-product partition |
+| `PRODUCT#id` | `EVENT#ts#type` | Hash-chained provenance event | Per-product partition |
+| `PRODUCT#id` | `SCAN#ts` | Verification scan log | Per-product partition |
+| `PRODUCT#id` | `CLAIM` | Consumer ownership lock (device fingerprint) | Per-product partition |
+| `VERIFY#code` | `META` | O(1) verification code → product lookup | Per-code partition |
+| `HASH#sha256` | `META` | Hash → product lookup (tamper detection) | Per-hash partition |
+| `THREAT#brand#YYYY-MM` | `ALERT#ts#type` | Threat alert (monthly-bucketed) | Per-brand-month partition |
+| `OPS_LOG#YYYY-MM-DD` | `ts#agent` | AI ops log (daily-bucketed) | Per-day partition |
+| `BRAND_INDEX` | `BRAND#ts#id` | Brand collection (no-Scan listing) | Single collection |
+| `PRODUCT_INDEX` | `PRODUCT#ts#id` | Product collection (no-Scan explore/analytics) | Single collection |
+
+#### GSI1 (Cross-Partition Queries)
+
+| GSI1PK | GSI1SK | Access Pattern |
 |---|---|---|
-| `BRAND#id` | `PROFILE` | Brand record |
-| `BRAND#id` | `STATS` | Aggregate counters |
-| `BRAND#id` | `WEBHOOK#id` | Webhook configuration |
-| `PRODUCT#id` | `META` | Product + hash + signature |
-| `PRODUCT#id` | `EVENT#ts#type` | Provenance event (hash-chained) |
-| `PRODUCT#id` | `SCAN#ts` | Verification scan log |
-| `VERIFY#code` | `META` | Verification code lookup |
-| `HASH#sha256` | `META` | Hash to product lookup |
-| `THREAT#brandId` | `ALERT#ts` | Threat intelligence alert |
-| **GSI1PK** | **GSI1SK** | |
-| `BRAND#id` | `PRODUCT#ts` | Products by brand (sorted) |
-| `BRAND#id` | `THREAT#ts` | Threats by brand (sorted) |
+| `BRAND#id` | `PRODUCT#ts` | Products by brand, sorted by date |
+| `BRAND#id` | `THREAT#ts` | Threats by brand across monthly buckets |
+| `VERIFY#code` | `META` | Verification code lookup (GSI projection) |
+| `OPS_LOG` | `ts` | AI operations across daily buckets |
+
+#### Access Pattern Matrix
+
+| Access Pattern | Operation | Key Condition | Index | Scan? |
+|---|---|---|---|---|
+| Register brand | PutItem | `BRAND#id / PROFILE` + `BRAND_INDEX / BRAND#ts` | Table | No |
+| Get brand profile | GetItem | `BRAND#id / PROFILE` | Table | No |
+| List all brands | Query | `BRAND_INDEX / begins_with(BRAND#)` | Table | No |
+| Brand statistics | GetItem | `BRAND#id / STATS` | Table | No |
+| Register product | PutItem | `PRODUCT#id / META` + `VERIFY#code / META` + `HASH# / META` + `PRODUCT_INDEX / PRODUCT#ts` | Table | No |
+| Verify product | GetItem → Query | `VERIFY#code / META` → `PRODUCT#id / META` → `PRODUCT#id / EVENT#` | Table | No |
+| List products by brand | Query | `GSI1PK=BRAND#id / begins_with(PRODUCT#)` | GSI1 | No |
+| Explore all products | Query | `PRODUCT_INDEX / begins_with(PRODUCT#)` | Table | No |
+| Add provenance event | PutItem | `PRODUCT#id / EVENT#ts#type` | Table | No |
+| Get provenance chain | Query | `PRODUCT#id / begins_with(EVENT#)` | Table | No |
+| Record scan | PutItem | `PRODUCT#id / SCAN#ts` | Table | No |
+| Get scan history | Query | `PRODUCT#id / begins_with(SCAN#)` | Table | No |
+| Write threat alert | PutItem | `THREAT#brand#YYYY-MM / ALERT#ts` | Table | No |
+| Get threats by brand | Query | `GSI1PK=BRAND#id / begins_with(THREAT#)` | GSI1 | No |
+| Write AI ops log | PutItem | `OPS_LOG#YYYY-MM-DD / ts#agent` | Table | No |
+| Read AI ops log | Query (scatter-gather) | `OPS_LOG#YYYY-MM-DD` × N days | Table | No |
+| Claim product | PutItem | `PRODUCT#id / CLAIM` | Table | No |
+| Health check | Scan(Limit:1) | — | Table | 1 item only |
+
+**Design decisions:**
+- **Time-bucketed sharding** on OPS_LOG (daily) and THREAT (monthly) prevents write-hot-spotting on high-throughput partitions. Dashboard reads scatter-gather across recent buckets.
+- **Collection keys** (`BRAND_INDEX`, `PRODUCT_INDEX`) eliminate full-table Scans for listing operations. Each entity registration writes an additional index entry.
+- **GSI1** serves cross-partition queries: products-by-brand, threats-by-brand (across monthly buckets), and verification code lookups.
+- **Zero Scans** on data paths. The only Scan is the health-check probe (Limit: 1, SELECT: COUNT) for DynamoDB connectivity testing.
+- **Atomic counters** on BRAND#id/STATS avoid read-modify-write races on productCount/scanCount/threatCount.
 
 ### DynamoDB Streams + Lambda + Gemini Pipeline
 
@@ -82,7 +126,7 @@ When any check fires, the Lambda calls **Gemini 2.5 Flash** with the full threat
 
 A second Gemini integration point — the **Chain Gap Analyst** — triggers when a provenance event reveals a temporal gap >72 hours, analyzing possible causes (customs hold, carrier switch, unauthorized storage, cold chain breach).
 
-Every Gemini call is logged to the OPS_LOG partition in DynamoDB with agent name, trigger type, anomaly flags, severity, attack vector, confidence, and latency. The `/ops-log` page exposes this as a live auto-refreshing dashboard.
+Every Gemini call is logged to daily-bucketed `OPS_LOG#YYYY-MM-DD` partitions in DynamoDB with agent name, trigger type, anomaly flags, severity, attack vector, confidence, and latency. Time-bucketed sharding prevents write-hot-spotting — the dashboard scatter-gathers across recent daily buckets. The `/ops-log` page exposes this as a live auto-refreshing dashboard.
 
 Alerts are written back to DynamoDB with `source: "lambda-stream"`. The SSE endpoint (`/api/stream`) polls for new threats every 3 seconds and streams them to the dashboard's `LiveThreats` component, which flashes on new alerts with no page refresh needed.
 

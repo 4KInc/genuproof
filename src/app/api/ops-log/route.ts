@@ -1,17 +1,47 @@
 import { NextRequest, NextResponse } from "next/server";
-import { queryItems } from "@/lib/dynamodb";
+import { queryItems, queryGSI1 } from "@/lib/dynamodb";
 
 // AI Operations Log — every Gemini call logged with tokens, latency, outputs
-// Evidence for AI-Native Operations criterion
+// Time-bucketed PK: OPS_LOG#YYYY-MM-DD avoids write-hot-spotting
+// Dashboard reads via GSI1 (PK=OPS_LOG) for cross-day queries,
+// or scatter-gather across date-bucketed partitions for targeted ranges.
 
 export async function GET(req: NextRequest) {
   try {
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
+    const days = parseInt(req.nextUrl.searchParams.get("days") || "7");
 
-    const logs = await queryItems("OPS_LOG", undefined, {
-      limit,
-      scanForward: false,
-    });
+    // Scatter-gather: query each daily partition in parallel
+    const buckets: string[] = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(Date.now() - i * 86400000);
+      buckets.push(d.toISOString().slice(0, 10));
+    }
+
+    const results = await Promise.all(
+      buckets.map((date) =>
+        queryItems(`OPS_LOG#${date}`, undefined, {
+          limit,
+          scanForward: false,
+        })
+      )
+    );
+
+    // Merge, sort by timestamp descending, take limit
+    let logs = results
+      .flat()
+      .sort((a, b) =>
+        (b.timestamp as string).localeCompare(a.timestamp as string)
+      )
+      .slice(0, limit);
+
+    // Fallback: if no time-bucketed data found, try legacy OPS_LOG partition
+    if (logs.length === 0) {
+      logs = await queryItems("OPS_LOG", undefined, {
+        limit,
+        scanForward: false,
+      });
+    }
 
     // Aggregate stats
     const totalOps = logs.length;

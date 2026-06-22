@@ -27,11 +27,19 @@ export async function GET(req: NextRequest) {
         if (closed) return;
 
         try {
-          // Query threats newer than lastTimestamp
-          const threats = await queryItems(`THREAT#${brandId}`, `ALERT#${lastTimestamp}`, {
+          // Query threats via GSI1 — works across monthly-bucketed THREAT partitions
+          const { queryGSI1 } = await import("@/lib/dynamodb");
+          let threats = await queryGSI1(`BRAND#${brandId}`, `THREAT#${lastTimestamp}`, {
             limit: 10,
             scanForward: true,
           });
+          // Fallback: legacy unbucketed partition
+          if (threats.length === 0) {
+            threats = await queryItems(`THREAT#${brandId}`, `ALERT#${lastTimestamp}`, {
+              limit: 10,
+              scanForward: true,
+            });
+          }
 
           for (const threat of threats) {
             const ts = threat.timestamp as string;

@@ -28,20 +28,25 @@ export const TABLE_NAME = process.env.DYNAMODB_TABLE || "authentik";
 // ── Single-Table Design ──
 // PK / SK patterns:
 //
-// BRAND#<brandId>          | PROFILE                    → Brand profile
-// BRAND#<brandId>          | PRODUCT#<productId>        → Product record
-// BRAND#<brandId>          | STATS                      → Aggregate stats
-// PRODUCT#<productId>      | META                       → Product lookup by ID
-// PRODUCT#<productId>      | EVENT#<timestamp>#<type>   → Provenance event
-// PRODUCT#<productId>      | SCAN#<timestamp>           → Scan/verification log
-// HASH#<sha256>            | META                       → Hash → product lookup
-// THREAT#<brandId>         | ALERT#<timestamp>          → Threat alerts
-// USER#<userId>            | PROFILE                    → User/consumer profile
+// BRAND#<brandId>               | PROFILE                    → Brand profile
+// BRAND#<brandId>               | STATS                      → Aggregate counters (atomic)
+// BRAND#<brandId>               | WEBHOOK#<id>               → Webhook configuration
+// PRODUCT#<productId>           | META                       → Product + hash + signature
+// PRODUCT#<productId>           | EVENT#<ts>#<type>          → Hash-chained provenance event
+// PRODUCT#<productId>           | SCAN#<ts>                  → Verification scan log
+// PRODUCT#<productId>           | CLAIM                      → Consumer ownership lock
+// VERIFY#<code>                 | META                       → O(1) code → product lookup
+// HASH#<sha256>                 | META                       → Hash → product lookup
+// THREAT#<brandId>#<YYYY-MM>    | ALERT#<ts>#<type>          → Threat alert (monthly-bucketed)
+// OPS_LOG#<YYYY-MM-DD>          | <ts>#<agent>               → AI ops log (daily-bucketed)
+// BRAND_INDEX                   | BRAND#<ts>#<id>            → Brand collection (no-Scan listing)
+// PRODUCT_INDEX                 | PRODUCT#<ts>#<id>          → Product collection (no-Scan explore)
 //
 // GSI1: GSI1PK / GSI1SK
-// BRAND#<brandId>          | PRODUCT#<createdAt>        → Products by brand, sorted by date
-// BRAND#<brandId>          | THREAT#<timestamp>         → Threats by brand, sorted by date
-// VERIFY#<code>            | META                       → Verification code lookup
+// BRAND#<brandId>               | PRODUCT#<createdAt>        → Products by brand, sorted by date
+// BRAND#<brandId>               | THREAT#<timestamp>         → Threats across monthly buckets
+// VERIFY#<code>                 | META                       → Verification code lookup
+// OPS_LOG                       | <timestamp>                → AI ops across daily buckets
 
 export async function putItem(item: Record<string, unknown>) {
   return ddb.send(new PutCommand({ TableName: TABLE_NAME, Item: item }));

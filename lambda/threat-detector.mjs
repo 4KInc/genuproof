@@ -377,8 +377,12 @@ async function getProduct(productId) {
 }
 
 async function createAlert({ brandId, type, severity, productId, details, timestamp, aiAnalysis }) {
+  // Monthly-bucketed PK: THREAT#brandId#YYYY-MM distributes writes
+  // Avoids write-hot-spotting when one brand accumulates many alerts
+  // GSI1 (BRAND#brandId / THREAT#timestamp) enables cross-month queries
+  const monthBucket = timestamp.slice(0, 7); // YYYY-MM
   const alert = {
-    PK: `THREAT#${brandId}`,
+    PK: `THREAT#${brandId}#${monthBucket}`,
     SK: `ALERT#${timestamp}#${type}`,
     GSI1PK: `BRAND#${brandId}`,
     GSI1SK: `THREAT#${timestamp}`,
@@ -398,11 +402,16 @@ async function createAlert({ brandId, type, severity, productId, details, timest
 }
 
 async function writeOpsLog({ agent, trigger, productId, brandId, anomalyFlags, geminiModel, aiSeverity, aiAttackVector, aiConfidence, latencyMs, timestamp }) {
+  // Time-bucketed PK: OPS_LOG#YYYY-MM-DD distributes writes across daily partitions
+  // Avoids write-hot-spotting on a single OPS_LOG partition key
+  const dateBucket = timestamp.slice(0, 10); // YYYY-MM-DD
   await ddb.send(new PutCommand({
     TableName: TABLE,
     Item: {
-      PK: "OPS_LOG",
+      PK: `OPS_LOG#${dateBucket}`,
       SK: `${timestamp}#${agent}`,
+      GSI1PK: "OPS_LOG",
+      GSI1SK: timestamp,
       agent, trigger, productId, brandId,
       anomalyFlags, geminiModel,
       aiSeverity, aiAttackVector, aiConfidence,

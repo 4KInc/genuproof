@@ -1,40 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { queryItems, queryGSI1 } from "@/lib/dynamodb";
 
-const client = new DynamoDBClient({
-  region: process.env.AWS_REGION || "us-east-1",
-  ...(process.env.AWS_ACCESS_KEY_ID && {
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  }),
-});
-const ddb = DynamoDBDocumentClient.from(client);
-const TABLE = process.env.DYNAMODB_TABLE || "authentik";
+// Analytics — uses collection keys and GSI1 queries instead of table Scan
+// Products via PRODUCT_INDEX, scans via per-product SCAN# queries
 
 export async function GET(req: NextRequest) {
   try {
     const brandId = req.nextUrl.searchParams.get("brandId");
 
-    // Get all scans
-    const scanFilter = brandId
-      ? "begins_with(PK, :prefix) AND begins_with(SK, :sk)"
-      : "begins_with(SK, :sk)";
-    const scanResult = await ddb.send(
-      new ScanCommand({
-        TableName: TABLE,
-        FilterExpression: scanFilter,
-        ExpressionAttributeValues: {
-          ...(brandId ? { ":prefix": `PRODUCT#` } : {}),
-          ":sk": "SCAN#",
-        },
-        Limit: 500,
-      })
-    );
+    // Get products from PRODUCT_INDEX (no Scan)
+    let products = await queryItems("PRODUCT_INDEX", "PRODUCT#", {
+      limit: 500,
+      scanForward: false,
+    });
 
-    const scans = scanResult.Items || [];
+    // Fallback: if no index, use GSI1 per-brand query
+    if (products.length === 0 && brandId) {
+      products = await queryGSI1(`BRAND#${brandId}`, "PRODUCT#", {
+        limit: 500,
+        scanForward: false,
+      });
+    }
+
+    // Filter by brand if specified
+    if (brandId) {
+      products = products.filter((p) => p.brandId === brandId);
+    }
+
+    // Category and status breakdown from product index
+    const categoryMap: Record<string, number> = {};
+    const statusMap: Record<string, number> = {};
+    for (const p of products) {
+      const cat = (p.category as string) || "Uncategorized";
+      categoryMap[cat] = (categoryMap[cat] || 0) + 1;
+      const s = (p.status as string) || "active";
+      statusMap[s] = (statusMap[s] || 0) + 1;
+    }
+
+    // Get scans: query per-product SCAN# records for recent products (top 50)
+    const recentProducts = products.slice(0, 50);
+    const scanResults = await Promise.all(
+      recentProducts.map((p) =>
+        queryItems(`PRODUCT#${p.productId}`, "SCAN#", {
+          limit: 50,
+          scanForward: false,
+        })
+      )
+    );
+    const scans = scanResults.flat();
 
     // Scans per day (last 7 days)
     const now = Date.now();
@@ -73,31 +86,9 @@ export async function GET(req: NextRequest) {
       hourlyMap[hour]++;
     }
 
-    // Get all products for category breakdown
-    const productResult = await ddb.send(
-      new ScanCommand({
-        TableName: TABLE,
-        FilterExpression: "begins_with(PK, :prefix) AND SK = :sk",
-        ExpressionAttributeValues: { ":prefix": "PRODUCT#", ":sk": "META" },
-        Limit: 500,
-      })
-    );
-    const products = productResult.Items || [];
-
-    const categoryMap: Record<string, number> = {};
-    for (const p of products) {
-      const cat = (p.category as string) || "Uncategorized";
-      categoryMap[cat] = (categoryMap[cat] || 0) + 1;
-    }
     const categoryBreakdown = Object.entries(categoryMap)
       .sort((a, b) => b[1] - a[1])
       .map(([category, count]) => ({ category, count }));
-
-    const statusMap: Record<string, number> = {};
-    for (const p of products) {
-      const s = (p.status as string) || "active";
-      statusMap[s] = (statusMap[s] || 0) + 1;
-    }
 
     return NextResponse.json({
       totalScans: scans.length,
