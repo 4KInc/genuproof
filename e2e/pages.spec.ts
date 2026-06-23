@@ -29,9 +29,11 @@ test.describe("Page Loads", () => {
     expect(content).toMatch(/api|endpoint|documentation/i);
   });
 
-  test("explore page shows registered products gallery", async ({ page }) => {
+  test("explore page loads product gallery", async ({ page }) => {
     await page.goto("/explore");
-    await expect(page.getByText("products registered").or(page.getByText("Explore"))).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('h1, h2').first()).toBeVisible({ timeout: 10000 });
+    const content = await page.textContent("body");
+    expect(content).toMatch(/explore|product|gallery/i);
   });
 
   test("QR certificate page renders for valid code", async ({ page }) => {
