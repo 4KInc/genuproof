@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { SiteNav } from "@/components/site-nav";
 
 interface HealthData {
   status: string;
@@ -70,18 +71,7 @@ export default function StatusPage() {
 
   return (
     <div className="min-h-screen">
-      <nav className="border-b border-border">
-        <div className="max-w-[800px] mx-auto px-6 md:px-10 flex items-center justify-between h-14">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-6 h-6 border-2 border-primary rounded-sm flex items-center justify-center">
-              <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-              </svg>
-            </div>
-            <span className="text-sm font-medium tracking-wide uppercase">Authentik</span>
-          </Link>
-        </div>
-      </nav>
+      <SiteNav />
 
       <div className="max-w-[800px] mx-auto px-6 md:px-10 py-12">
         <p className="text-[13px] text-muted-foreground tracking-wide uppercase mb-3">System</p>
