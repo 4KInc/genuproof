@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ScanAnalytics } from "@/components/scan-heatmap";
 import { ActivityFeed } from "@/components/activity-feed";
 import { LiveThreats } from "@/components/live-threats";
+import { SiteNav } from "@/components/site-nav";
 
 interface RegisteredProduct {
   productId: string;
@@ -273,20 +274,7 @@ export default function Dashboard() {
 
       {/* Main */}
       <main className="flex-1 overflow-auto">
-        {!brandRegistered && (
-          <nav className="border-b border-border">
-            <div className="max-w-[1200px] mx-auto px-6 md:px-10 flex items-center h-14">
-              <Link href="/" className="flex items-center gap-2.5">
-                <div className="w-6 h-6 border-2 border-primary rounded-sm flex items-center justify-center">
-                  <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium tracking-wide uppercase">Authentik</span>
-              </Link>
-            </div>
-          </nav>
-        )}
+        {!brandRegistered && <SiteNav />}
 
         <div className={brandRegistered ? "p-8 max-w-3xl" : "max-w-lg mx-auto px-6 py-16"}>
           {/* Message */}
