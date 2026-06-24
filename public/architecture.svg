@@ -1,176 +1,246 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" font-family="'Helvetica Neue', Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 820" font-family="'Helvetica Neue', Arial, sans-serif">
   <defs>
     <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6" fill="#0d503c" stroke="none"/>
     </marker>
-    <marker id="arrow-gray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6" fill="#6b6960" stroke="none"/>
+    <marker id="arrow-gold" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#b8860b" stroke="none"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#c0392b" stroke="none"/>
     </marker>
   </defs>
 
   <!-- Background -->
-  <rect width="1200" height="700" fill="#faf8f4"/>
+  <rect width="1400" height="820" fill="#faf8f4"/>
 
   <!-- Title -->
-  <text x="40" y="40" font-size="11" fill="#6b6960" letter-spacing="3" font-weight="500">ARCHITECTURE DIAGRAM</text>
-  <text x="40" y="65" font-size="24" fill="#1a1a18" font-weight="600">Authentik Platform</text>
-  <text x="40" y="85" font-size="12" fill="#6b6960">Anti-Counterfeiting &amp; Product Authentication</text>
+  <text x="40" y="38" font-size="10" fill="#6b6960" letter-spacing="3" font-weight="500">SYSTEM ARCHITECTURE</text>
+  <text x="40" y="62" font-size="22" fill="#1a1a18" font-weight="600">Authentik Platform</text>
+  <text x="280" y="62" font-size="12" fill="#6b6960">Anti-Counterfeiting with DynamoDB Single-Table Design</text>
 
   <!-- ═══ CLIENT LAYER ═══ -->
-  <text x="40" y="130" font-size="9" fill="#b8860b" letter-spacing="2" font-weight="600">CLIENT LAYER</text>
+  <text x="40" y="100" font-size="9" fill="#b8860b" letter-spacing="2" font-weight="600">CLIENTS</text>
 
-  <!-- Brand Dashboard -->
-  <rect x="40" y="145" width="170" height="70" fill="white" stroke="#d4cfc4" stroke-width="1"/>
-  <rect x="40" y="145" width="170" height="3" fill="#0d503c"/>
-  <text x="55" y="168" font-size="11" fill="#1a1a18" font-weight="600">Brand Dashboard</text>
-  <text x="55" y="183" font-size="9" fill="#6b6960">Register products</text>
-  <text x="55" y="195" font-size="9" fill="#6b6960">Manage supply chain</text>
-  <text x="55" y="207" font-size="9" fill="#6b6960">Monitor threats</text>
+  <rect x="40" y="112" width="130" height="55" fill="white" stroke="#d4cfc4" stroke-width="1"/>
+  <rect x="40" y="112" width="130" height="2.5" fill="#0d503c"/>
+  <text x="52" y="133" font-size="10" fill="#1a1a18" font-weight="600">Brand Dashboard</text>
+  <text x="52" y="147" font-size="8" fill="#6b6960">Register, manage, monitor</text>
+  <text x="52" y="159" font-size="8" fill="#6b6960">5 tabs, live threat feed</text>
 
-  <!-- Consumer Verify -->
-  <rect x="240" y="145" width="170" height="70" fill="white" stroke="#d4cfc4" stroke-width="1"/>
-  <rect x="240" y="145" width="170" height="3" fill="#0d503c"/>
-  <text x="255" y="168" font-size="11" fill="#1a1a18" font-weight="600">Consumer Verification</text>
-  <text x="255" y="183" font-size="9" fill="#6b6960">QR code scan</text>
-  <text x="255" y="195" font-size="9" fill="#6b6960">Code entry</text>
-  <text x="255" y="207" font-size="9" fill="#6b6960">Certificate display</text>
+  <rect x="185" y="112" width="130" height="55" fill="white" stroke="#d4cfc4" stroke-width="1"/>
+  <rect x="185" y="112" width="130" height="2.5" fill="#0d503c"/>
+  <text x="197" y="133" font-size="10" fill="#1a1a18" font-weight="600">Consumer Scan</text>
+  <text x="197" y="147" font-size="8" fill="#6b6960">QR code or code entry</text>
+  <text x="197" y="159" font-size="8" fill="#6b6960">No app, one scan</text>
 
-  <!-- QR Code -->
-  <rect x="440" y="145" width="110" height="70" fill="white" stroke="#d4cfc4" stroke-width="1"/>
-  <rect x="440" y="145" width="110" height="3" fill="#b8860b"/>
-  <text x="455" y="168" font-size="11" fill="#1a1a18" font-weight="600">QR Codes</text>
-  <text x="455" y="183" font-size="9" fill="#6b6960">PNG / SVG</text>
-  <text x="455" y="195" font-size="9" fill="#6b6960">Embeddable</text>
+  <rect x="330" y="112" width="130" height="55" fill="white" stroke="#d4cfc4" stroke-width="1"/>
+  <rect x="330" y="112" width="130" height="2.5" fill="#b8860b"/>
+  <text x="342" y="133" font-size="10" fill="#1a1a18" font-weight="600">Webhooks In</text>
+  <text x="342" y="147" font-size="8" fill="#6b6960">FedEx, DHL, UPS</text>
+  <text x="342" y="159" font-size="8" fill="#6b6960">Shopify, Square, WMS</text>
+
+  <rect x="475" y="112" width="100" height="55" fill="white" stroke="#d4cfc4" stroke-width="1"/>
+  <rect x="475" y="112" width="100" height="2.5" fill="#0d503c"/>
+  <text x="487" y="133" font-size="10" fill="#1a1a18" font-weight="600">Stripe</text>
+  <text x="487" y="147" font-size="8" fill="#6b6960">$0 / $99 / $299</text>
+  <text x="487" y="159" font-size="8" fill="#6b6960">Subscription</text>
+
+  <!-- Arrows: Clients → Vercel -->
+  <line x1="105" y1="167" x2="105" y2="198" stroke="#0d503c" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="250" y1="167" x2="250" y2="198" stroke="#0d503c" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="395" y1="167" x2="395" y2="198" stroke="#b8860b" stroke-width="1" marker-end="url(#arrow-gold)"/>
+  <line x1="525" y1="167" x2="525" y2="198" stroke="#0d503c" stroke-width="1" marker-end="url(#arrow)"/>
 
   <!-- ═══ VERCEL LAYER ═══ -->
-  <text x="40" y="265" font-size="9" fill="#b8860b" letter-spacing="2" font-weight="600">VERCEL — NEXT.JS 16 (EDGE + SERVERLESS)</text>
+  <text x="40" y="210" font-size="9" fill="#0d503c" letter-spacing="2" font-weight="600">VERCEL (NEXT.JS 16, SERVERLESS FUNCTIONS)</text>
 
-  <!-- Next.js App -->
-  <rect x="40" y="280" width="510" height="130" fill="white" stroke="#0d503c" stroke-width="1.5" rx="0"/>
-  <rect x="40" y="280" width="510" height="3" fill="#0d503c"/>
+  <rect x="40" y="220" width="535" height="120" fill="white" stroke="#0d503c" stroke-width="1.5"/>
+  <rect x="40" y="220" width="535" height="3" fill="#0d503c"/>
 
-  <!-- Static Pages -->
-  <rect x="55" y="295" width="145" height="50" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
-  <text x="65" y="313" font-size="9" fill="#6b6960" letter-spacing="1">STATIC PAGES</text>
-  <text x="65" y="327" font-size="9" fill="#1a1a18">/ (Landing)</text>
-  <text x="65" y="339" font-size="9" fill="#1a1a18">/dashboard /verify</text>
+  <!-- Pages -->
+  <rect x="55" y="235" width="155" height="45" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
+  <text x="65" y="252" font-size="8" fill="#6b6960" letter-spacing="1">15 PAGES</text>
+  <text x="65" y="265" font-size="8" fill="#1a1a18">Dashboard, Verify, Pricing</text>
+  <text x="65" y="275" font-size="8" fill="#1a1a18">MCP, Docs, Ops Log, ...</text>
 
   <!-- API Routes -->
-  <rect x="215" y="295" width="320" height="105" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
-  <text x="225" y="313" font-size="9" fill="#6b6960" letter-spacing="1">API ROUTES (SERVERLESS)</text>
+  <rect x="225" y="235" width="170" height="45" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
+  <text x="235" y="252" font-size="8" fill="#6b6960" letter-spacing="1">37 API ROUTES</text>
+  <text x="235" y="265" font-size="8" fill="#1a1a18">/api/products/verify</text>
+  <text x="235" y="275" font-size="8" fill="#1a1a18">/api/ingest/shipping,pos,wms</text>
 
-  <text x="225" y="332" font-size="9" fill="#1a1a18" font-weight="500">POST /api/brands</text>
-  <text x="370" y="332" font-size="8" fill="#6b6960">Brand registration</text>
+  <!-- Crypto Module -->
+  <rect x="410" y="235" width="150" height="45" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
+  <text x="420" y="252" font-size="8" fill="#6b6960" letter-spacing="1">CRYPTO MODULE</text>
+  <text x="420" y="265" font-size="8" fill="#1a1a18">SHA-256, HMAC-SHA256</text>
+  <text x="420" y="275" font-size="8" fill="#1a1a18">Hash chains, Merkle trees</text>
 
-  <text x="225" y="347" font-size="9" fill="#1a1a18" font-weight="500">POST /api/products/register</text>
-  <text x="410" y="347" font-size="8" fill="#6b6960">SHA-256 + HMAC</text>
+  <!-- SSE -->
+  <rect x="55" y="290" width="155" height="38" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
+  <text x="65" y="306" font-size="8" fill="#6b6960" letter-spacing="1">SSE ENDPOINT</text>
+  <text x="65" y="318" font-size="8" fill="#1a1a18">/api/stream (real-time alerts)</text>
 
-  <text x="225" y="362" font-size="9" fill="#1a1a18" font-weight="500">GET  /api/products/verify</text>
-  <text x="400" y="362" font-size="8" fill="#6b6960">Verify + anomaly detect</text>
+  <!-- MCP Server -->
+  <rect x="225" y="290" width="170" height="38" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
+  <text x="235" y="306" font-size="8" fill="#6b6960" letter-spacing="1">MCP SERVER</text>
+  <text x="235" y="318" font-size="8" fill="#1a1a18">44 tools (stdio, JSON-RPC)</text>
 
-  <text x="225" y="377" font-size="9" fill="#1a1a18" font-weight="500">POST /api/products/events</text>
-  <text x="410" y="377" font-size="8" fill="#6b6960">Hash-chained</text>
+  <!-- DPP Export -->
+  <rect x="410" y="290" width="150" height="38" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
+  <text x="420" y="306" font-size="8" fill="#6b6960" letter-spacing="1">EU DPP EXPORT</text>
+  <text x="420" y="318" font-size="8" fill="#1a1a18">ESPR-2024/1781 JSON</text>
 
-  <text x="225" y="392" font-size="9" fill="#1a1a18" font-weight="500">GET  /api/threats</text>
-  <text x="355" y="392" font-size="8" fill="#6b6960">Threat intelligence</text>
+  <!-- Arrow: Vercel → DynamoDB -->
+  <line x1="295" y1="340" x2="295" y2="385" stroke="#0d503c" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="300" y="368" font-size="8" fill="#6b6960">Read/Write</text>
 
-  <!-- Crypto module label -->
-  <rect x="55" y="360" width="145" height="40" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
-  <text x="65" y="378" font-size="9" fill="#6b6960" letter-spacing="1">CRYPTO MODULE</text>
-  <text x="65" y="392" font-size="9" fill="#1a1a18">SHA-256 HMAC Merkle</text>
+  <!-- ═══ DYNAMODB LAYER ═══ -->
+  <text x="40" y="398" font-size="9" fill="#b8860b" letter-spacing="2" font-weight="600">AWS DYNAMODB (us-east-1, PAY_PER_REQUEST, STREAMS: NEW_IMAGE)</text>
 
-  <!-- ═══ AWS LAYER ═══ -->
-  <text x="40" y="460" font-size="9" fill="#b8860b" letter-spacing="2" font-weight="600">AWS — DYNAMODB (us-east-1)</text>
-
-  <!-- DynamoDB Table -->
-  <rect x="40" y="475" width="510" height="195" fill="white" stroke="#0d503c" stroke-width="1.5"/>
-  <rect x="40" y="475" width="510" height="3" fill="#b8860b"/>
+  <rect x="40" y="408" width="535" height="215" fill="white" stroke="#0d503c" stroke-width="1.5"/>
+  <rect x="40" y="408" width="535" height="3" fill="#b8860b"/>
 
   <!-- Table name -->
-  <text x="55" y="498" font-size="11" fill="#1a1a18" font-weight="600">Table: authentik</text>
-  <text x="200" y="498" font-size="9" fill="#6b6960">PAY_PER_REQUEST | TTL enabled</text>
+  <text x="55" y="432" font-size="11" fill="#1a1a18" font-weight="600">Table: authentik</text>
+  <text x="195" y="432" font-size="9" fill="#6b6960">Single-table design, 13 PK/SK patterns, 1 GSI</text>
 
-  <!-- Primary key patterns -->
-  <text x="55" y="522" font-size="9" fill="#6b6960" letter-spacing="1">PK / SK ACCESS PATTERNS</text>
+  <!-- PK/SK patterns -->
+  <text x="55" y="455" font-size="8" fill="#6b6960" letter-spacing="1">ENTITY PARTITIONS (per-entity write distribution)</text>
+  <text x="55" y="472" font-size="8" fill="#1a1a18" font-family="monospace">BRAND#id          | PROFILE / STATS / WEBHOOK#id</text>
+  <text x="55" y="486" font-size="8" fill="#1a1a18" font-family="monospace">PRODUCT#id        | META / EVENT#ts / SCAN#ts / CLAIM</text>
+  <text x="55" y="500" font-size="8" fill="#1a1a18" font-family="monospace">VERIFY#code       | META   (O(1) code lookup)</text>
+  <text x="55" y="514" font-size="8" fill="#1a1a18" font-family="monospace">HASH#sha256       | META   (tamper detection)</text>
 
-  <text x="55" y="540" font-size="8.5" fill="#1a1a18" font-family="monospace">BRAND#id   | PROFILE</text>
-  <text x="280" y="540" font-size="8" fill="#6b6960">Brand record</text>
+  <text x="55" y="535" font-size="8" fill="#6b6960" letter-spacing="1">SHARDED PARTITIONS (time-bucketed, no hot-spotting)</text>
+  <text x="55" y="552" font-size="8" fill="#1a1a18" font-family="monospace">THREAT#brand#YYYY-MM   | ALERT#ts   (monthly buckets)</text>
+  <text x="55" y="566" font-size="8" fill="#1a1a18" font-family="monospace">OPS_LOG#YYYY-MM-DD     | ts#agent   (daily buckets)</text>
 
-  <text x="55" y="555" font-size="8.5" fill="#1a1a18" font-family="monospace">PRODUCT#id | META</text>
-  <text x="280" y="555" font-size="8" fill="#6b6960">Product + hash + signature</text>
-
-  <text x="55" y="570" font-size="8.5" fill="#1a1a18" font-family="monospace">PRODUCT#id | EVENT#ts#type</text>
-  <text x="280" y="570" font-size="8" fill="#6b6960">Provenance chain (append-only)</text>
-
-  <text x="55" y="585" font-size="8.5" fill="#1a1a18" font-family="monospace">PRODUCT#id | SCAN#ts</text>
-  <text x="280" y="585" font-size="8" fill="#6b6960">Verification scan log</text>
-
-  <text x="55" y="600" font-size="8.5" fill="#1a1a18" font-family="monospace">VERIFY#code| META</text>
-  <text x="280" y="600" font-size="8" fill="#6b6960">Code → product lookup</text>
-
-  <text x="55" y="615" font-size="8.5" fill="#1a1a18" font-family="monospace">THREAT#bid | ALERT#ts</text>
-  <text x="280" y="615" font-size="8" fill="#6b6960">Threat intelligence alerts</text>
+  <text x="55" y="587" font-size="8" fill="#6b6960" letter-spacing="1">COLLECTION KEYS (no-Scan listing, Query only)</text>
+  <text x="55" y="604" font-size="8" fill="#1a1a18" font-family="monospace">BRAND_INDEX   | BRAND#ts#id      PRODUCT_INDEX | PRODUCT#ts#id</text>
 
   <!-- GSI1 -->
-  <rect x="55" y="628" width="480" height="32" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
-  <text x="65" y="644" font-size="9" fill="#6b6960" letter-spacing="1">GSI1</text>
-  <text x="100" y="644" font-size="8.5" fill="#1a1a18" font-family="monospace">GSI1PK=BRAND#id GSI1SK=PRODUCT#ts</text>
-  <text x="370" y="644" font-size="8" fill="#6b6960">Products by brand (sorted by date)</text>
+  <rect x="370" y="448" width="190" height="50" fill="#f0ece4" stroke="#d4cfc4" stroke-width="0.5"/>
+  <text x="380" y="465" font-size="8" fill="#6b6960" letter-spacing="1">GSI1</text>
+  <text x="380" y="479" font-size="7.5" fill="#1a1a18" font-family="monospace">BRAND#id | PRODUCT#ts</text>
+  <text x="380" y="491" font-size="7.5" fill="#1a1a18" font-family="monospace">BRAND#id | THREAT#ts</text>
 
-  <!-- ═══ RIGHT SIDE — DATA FLOW ═══ -->
-  <text x="620" y="130" font-size="9" fill="#b8860b" letter-spacing="2" font-weight="600">DATA FLOW</text>
+  <!-- Zero scans badge -->
+  <rect x="370" y="510" width="190" height="30" fill="#0d503c" stroke="none"/>
+  <text x="380" y="530" font-size="9" fill="#faf8f4" font-weight="600">ZERO SCANS on data paths</text>
 
-  <!-- Registration flow -->
-  <rect x="620" y="145" width="260" height="110" fill="white" stroke="#d4cfc4" stroke-width="1"/>
-  <text x="635" y="168" font-size="10" fill="#1a1a18" font-weight="600">1. Product Registration</text>
-  <text x="635" y="186" font-size="9" fill="#6b6960">Brand submits product details</text>
-  <text x="635" y="200" font-size="9" fill="#6b6960">→ Server computes SHA-256 hash</text>
-  <text x="635" y="214" font-size="9" fill="#6b6960">→ Signs hash with HMAC-SHA256</text>
-  <text x="635" y="228" font-size="9" fill="#6b6960">→ Creates genesis provenance event</text>
-  <text x="635" y="242" font-size="9" fill="#6b6960">→ Returns verification code + QR</text>
+  <!-- ═══ STREAMS + LAMBDA + GEMINI PIPELINE ═══ -->
+  <text x="640" y="100" font-size="9" fill="#c0392b" letter-spacing="2" font-weight="600">REAL-TIME THREAT DETECTION PIPELINE</text>
 
-  <!-- Verification flow -->
-  <rect x="620" y="270" width="260" height="125" fill="white" stroke="#d4cfc4" stroke-width="1"/>
-  <text x="635" y="293" font-size="10" fill="#1a1a18" font-weight="600">2. Consumer Verification</text>
-  <text x="635" y="311" font-size="9" fill="#6b6960">Consumer scans QR / enters code</text>
-  <text x="635" y="325" font-size="9" fill="#6b6960">→ Lookup code in DynamoDB (&lt;10ms)</text>
-  <text x="635" y="339" font-size="9" fill="#6b6960">→ Recompute SHA-256, verify HMAC</text>
-  <text x="635" y="353" font-size="9" fill="#6b6960">→ Walk provenance chain, check links</text>
-  <text x="635" y="367" font-size="9" fill="#6b6960">→ Record scan, run anomaly detection</text>
-  <text x="635" y="381" font-size="9" fill="#6b6960">→ Return certificate + chain + warnings</text>
+  <!-- DynamoDB Streams -->
+  <rect x="640" y="112" width="220" height="50" fill="white" stroke="#b8860b" stroke-width="1.5"/>
+  <rect x="640" y="112" width="220" height="2.5" fill="#b8860b"/>
+  <text x="655" y="133" font-size="10" fill="#1a1a18" font-weight="600">DynamoDB Streams</text>
+  <text x="655" y="148" font-size="8" fill="#6b6960">NEW_IMAGE view type</text>
+  <text x="655" y="158" font-size="8" fill="#6b6960">Captures every write to authentik table</text>
 
-  <!-- Threat flow -->
-  <rect x="620" y="410" width="260" height="100" fill="white" stroke="#d4cfc4" stroke-width="1"/>
-  <text x="635" y="433" font-size="10" fill="#1a1a18" font-weight="600">3. Threat Intelligence</text>
-  <text x="635" y="451" font-size="9" fill="#6b6960">On every scan, checks for:</text>
-  <text x="635" y="465" font-size="9" fill="#6b6960">→ Geographic anomaly (3+ countries/24h)</text>
-  <text x="635" y="479" font-size="9" fill="#6b6960">→ Burst scanning (10+ scans/hour)</text>
-  <text x="635" y="493" font-size="9" fill="#6b6960">→ Hash/signature tampering</text>
+  <!-- Arrow: Streams → Lambda -->
+  <line x1="750" y1="162" x2="750" y2="192" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <text x="758" y="182" font-size="7" fill="#6b6960">Batch:10, Window:5s</text>
 
-  <!-- Provenance chain visual -->
-  <rect x="620" y="525" width="260" height="85" fill="white" stroke="#d4cfc4" stroke-width="1"/>
-  <text x="635" y="548" font-size="10" fill="#1a1a18" font-weight="600">4. Hash-Chained Provenance</text>
-  <text x="635" y="566" font-size="8" fill="#6b6960" font-family="monospace">Event₁.hash = SHA256(data + "")</text>
-  <text x="635" y="580" font-size="8" fill="#6b6960" font-family="monospace">Event₂.hash = SHA256(data + Event₁.hash)</text>
-  <text x="635" y="594" font-size="8" fill="#6b6960" font-family="monospace">Event₃.hash = SHA256(data + Event₂.hash)</text>
+  <!-- Lambda -->
+  <rect x="640" y="195" width="220" height="110" fill="white" stroke="#c0392b" stroke-width="1.5"/>
+  <rect x="640" y="195" width="220" height="2.5" fill="#c0392b"/>
+  <text x="655" y="216" font-size="10" fill="#1a1a18" font-weight="600">Lambda: authentik-threat-detector</text>
+  <text x="655" y="230" font-size="8" fill="#6b6960">412 lines, Node.js 20</text>
 
-  <!-- Arrows: Client → Vercel -->
-  <line x1="125" y1="215" x2="125" y2="278" stroke="#0d503c" stroke-width="1" marker-end="url(#arrow)"/>
-  <line x1="325" y1="215" x2="325" y2="278" stroke="#0d503c" stroke-width="1" marker-end="url(#arrow)"/>
-  <line x1="495" y1="215" x2="495" y2="278" stroke="#0d503c" stroke-width="1" marker-end="url(#arrow)"/>
+  <text x="655" y="250" font-size="8" fill="#1a1a18" font-weight="500">4 Anomaly Checks:</text>
+  <text x="655" y="263" font-size="7.5" fill="#6b6960">1. Geographic anomaly (3+ countries/24h)</text>
+  <text x="655" y="275" font-size="7.5" fill="#6b6960">2. Burst scanning (10+ scans/hour)</text>
+  <text x="655" y="287" font-size="7.5" fill="#6b6960">3. Claim violation (tag-cloning indicator)</text>
+  <text x="655" y="299" font-size="7.5" fill="#6b6960">4. Hash tampering (CRITICAL severity)</text>
 
-  <!-- Arrows: Vercel → DynamoDB -->
-  <line x1="295" y1="410" x2="295" y2="473" stroke="#0d503c" stroke-width="1" marker-end="url(#arrow)"/>
+  <!-- Arrow: Lambda → Gemini -->
+  <line x1="860" y1="250" x2="910" y2="250" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <text x="868" y="243" font-size="7" fill="#6b6960">If anomaly</text>
 
-  <!-- Arrows: flow connections -->
-  <line x1="550" y1="345" x2="618" y2="345" stroke="#6b6960" stroke-width="0.5" stroke-dasharray="4,3" marker-end="url(#arrow-gray)"/>
+  <!-- Gemini -->
+  <rect x="915" y="195" width="220" height="110" fill="white" stroke="#4285f4" stroke-width="1.5"/>
+  <rect x="915" y="195" width="220" height="2.5" fill="#4285f4"/>
+  <text x="930" y="216" font-size="10" fill="#1a1a18" font-weight="600">Gemini 2.5 Flash</text>
+  <text x="930" y="230" font-size="8" fill="#6b6960">2 integration points</text>
 
-  <!-- Tech stack footer -->
-  <text x="40" y="690" font-size="9" fill="#6b6960">Next.js 16 · TypeScript · Tailwind CSS · AWS DynamoDB · Vercel · SHA-256 · HMAC-SHA256 · Node.js Crypto</text>
-  <text x="1050" y="690" font-size="9" fill="#b8860b" font-weight="500">authentik-platform.vercel.app</text>
+  <text x="930" y="250" font-size="8" fill="#1a1a18" font-weight="500">Threat Classifier returns:</text>
+  <text x="930" y="263" font-size="7.5" fill="#6b6960">severity: LOW/MEDIUM/HIGH/CRITICAL</text>
+  <text x="930" y="275" font-size="7.5" fill="#6b6960">attack_vector: tag_cloning, burst_testing, ...</text>
+  <text x="930" y="287" font-size="7.5" fill="#6b6960">confidence: 0-100, narrative: "..."</text>
 
-  <!-- Vercel logo area -->
-  <text x="900" y="650" font-size="9" fill="#6b6960" letter-spacing="1">DEPLOYED ON</text>
-  <text x="900" y="668" font-size="14" fill="#1a1a18" font-weight="600">Vercel</text>
-  <text x="960" y="668" font-size="14" fill="#6b6960">+ AWS</text>
+  <text x="930" y="300" font-size="8" fill="#1a1a18" font-weight="500">Chain Gap Analyst (>72h gaps)</text>
+
+  <!-- Arrow: Lambda → DynamoDB (write back) -->
+  <line x1="750" y1="305" x2="750" y2="355" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+
+  <!-- THREAT write -->
+  <rect x="640" y="358" width="220" height="50" fill="white" stroke="#c0392b" stroke-width="1"/>
+  <text x="655" y="378" font-size="9" fill="#c0392b" font-weight="600">Writes back to DynamoDB:</text>
+  <text x="655" y="392" font-size="7.5" fill="#1a1a18" font-family="monospace">THREAT#brand#YYYY-MM | ALERT#ts</text>
+  <text x="655" y="404" font-size="7.5" fill="#1a1a18" font-family="monospace">OPS_LOG#YYYY-MM-DD  | ts#agent</text>
+
+  <!-- Arrow: DynamoDB → SSE → Dashboard -->
+  <line x1="750" y1="408" x2="750" y2="438" stroke="#c0392b" stroke-width="1" marker-end="url(#arrow-red)"/>
+
+  <rect x="640" y="440" width="220" height="40" fill="#c0392b" stroke="none"/>
+  <text x="655" y="458" font-size="9" fill="#faf8f4" font-weight="600">SSE: /api/stream</text>
+  <text x="655" y="472" font-size="8" fill="#faf8f4">Polls every 3s, pushes to dashboard</text>
+
+  <!-- Arrow back to dashboard -->
+  <line x1="640" y1="460" x2="170" y2="460" stroke="#c0392b" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="170" y1="460" x2="170" y2="340" stroke="#c0392b" stroke-width="1" marker-end="url(#arrow-red)"/>
+  <text x="190" y="410" font-size="7" fill="#c0392b" font-weight="500">Real-time alert</text>
+  <text x="190" y="420" font-size="7" fill="#c0392b" font-weight="500">(no page refresh)</text>
+
+  <!-- Arrow: DynamoDB main → Streams -->
+  <line x1="575" y1="500" x2="640" y2="140" stroke="#b8860b" stroke-width="1" stroke-dasharray="6,3" marker-end="url(#arrow-gold)"/>
+  <text x="585" y="340" font-size="7" fill="#b8860b" transform="rotate(-58, 585, 340)">DynamoDB Streams</text>
+
+  <!-- ═══ RIGHT SIDE: ANTI-TAG-CLONING ═══ -->
+  <text x="915" y="350" font-size="9" fill="#b8860b" letter-spacing="2" font-weight="600">ANTI-TAG-CLONING (5 LAYERS)</text>
+
+  <rect x="915" y="362" width="220" height="118" fill="white" stroke="#b8860b" stroke-width="1"/>
+  <text x="930" y="382" font-size="8" fill="#1a1a18" font-weight="500">1. Claim lock</text>
+  <text x="1030" y="382" font-size="7.5" fill="#6b6960">device fingerprint</text>
+  <text x="930" y="398" font-size="8" fill="#1a1a18" font-weight="500">2. Scan velocity</text>
+  <text x="1030" y="398" font-size="7.5" fill="#6b6960">scans/day over lifetime</text>
+  <text x="930" y="414" font-size="8" fill="#1a1a18" font-weight="500">3. Burst detection</text>
+  <text x="1030" y="414" font-size="7.5" fill="#6b6960">10+ scans in 1 hour</text>
+  <text x="930" y="430" font-size="8" fill="#1a1a18" font-weight="500">4. Geographic</text>
+  <text x="1030" y="430" font-size="7.5" fill="#6b6960">3+ countries in 24h</text>
+  <text x="930" y="446" font-size="8" fill="#1a1a18" font-weight="500">5. Dispute flow</text>
+  <text x="1030" y="446" font-size="7.5" fill="#6b6960">consumer challenge</text>
+  <text x="930" y="472" font-size="7" fill="#6b6960">Catches: buy 1 real, clone tag onto 100s of fakes</text>
+
+  <!-- ═══ ACCESS PATTERN SUMMARY ═══ -->
+  <text x="640" y="520" font-size="9" fill="#0d503c" letter-spacing="2" font-weight="600">ACCESS PATTERN SUMMARY</text>
+
+  <rect x="640" y="532" width="495" height="88" fill="white" stroke="#0d503c" stroke-width="1"/>
+  <text x="655" y="552" font-size="8" fill="#6b6960" letter-spacing="1">17 ACCESS PATTERNS, 0 FULL-TABLE SCANS</text>
+  <text x="655" y="570" font-size="7.5" fill="#1a1a18">Verify product: GetItem(VERIFY#code) > GetItem(PRODUCT#id) > Query(EVENT#)  sub-100ms</text>
+  <text x="655" y="584" font-size="7.5" fill="#1a1a18">List products:  Query(GSI1PK=BRAND#id, begins_with PRODUCT#)</text>
+  <text x="655" y="598" font-size="7.5" fill="#1a1a18">List threats:   Query(GSI1PK=BRAND#id, begins_with THREAT#)  across monthly buckets</text>
+  <text x="655" y="612" font-size="7.5" fill="#1a1a18">Read ops log:   Scatter-gather across OPS_LOG#date x 7 daily partitions</text>
+
+  <!-- ═══ CRYPTO DESIGN ═══ -->
+  <text x="640" y="650" font-size="9" fill="#0d503c" letter-spacing="2" font-weight="600">5 CRYPTOGRAPHIC PRIMITIVES</text>
+
+  <rect x="640" y="662" width="495" height="70" fill="white" stroke="#0d503c" stroke-width="1"/>
+  <text x="655" y="682" font-size="7.5" fill="#1a1a18">1. Product Hash:    SHA-256(canonical JSON)                    deterministic fingerprint</text>
+  <text x="655" y="696" font-size="7.5" fill="#1a1a18">2. HMAC Signature:  HMAC-SHA256(hash, server_secret)            server-authenticated integrity</text>
+  <text x="655" y="710" font-size="7.5" fill="#1a1a18">3. Provenance Chain: SHA-256(event_data + previous_event.hash)   tamper-evident linked chain</text>
+  <text x="655" y="724" font-size="7.5" fill="#1a1a18">4. Device FP:       SHA-256(ip + userAgent)                     anti-tag-cloning claim lock</text>
+
+  <!-- ═══ TESTING ═══ -->
+  <rect x="40" y="650" width="535" height="70" fill="white" stroke="#d4cfc4" stroke-width="1"/>
+  <text x="55" y="670" font-size="8" fill="#6b6960" letter-spacing="1">TESTING AND QUALITY</text>
+  <text x="55" y="688" font-size="9" fill="#1a1a18" font-weight="500">153 Playwright e2e tests</text>
+  <text x="55" y="702" font-size="8" fill="#6b6960">9 test suites: API endpoints, navigation, user flows, edge cases, UI interactions</text>
+  <text x="55" y="714" font-size="8" fill="#6b6960">All 37 API endpoints tested. All 15 pages tested. All 5 demo products verified.</text>
+
+  <!-- Footer -->
+  <text x="40" y="800" font-size="9" fill="#6b6960">Next.js 16 | TypeScript | Tailwind CSS | AWS DynamoDB | AWS Lambda | Gemini 2.5 Flash | Stripe | Vercel | Playwright</text>
+  <text x="1200" y="800" font-size="9" fill="#b8860b" font-weight="500">authentik-platform.vercel.app</text>
 </svg>
