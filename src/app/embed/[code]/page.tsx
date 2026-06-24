@@ -81,12 +81,12 @@ export default function EmbedBadge() {
           {brandName} — {productName}
         </div>
         <a
-          href={`https://authentik-platform.vercel.app/verify/${code}`}
+          href={`https://genuproof.com/verify/${code}`}
           target="_blank"
           rel="noopener noreferrer"
           style={{ fontSize: 9, color: "#6b6960", textDecoration: "none", opacity: 0.6, marginTop: 2, display: "inline-block" }}
         >
-          Powered by Authentik
+          Powered by GenuProof
         </a>
       </div>
     </div>

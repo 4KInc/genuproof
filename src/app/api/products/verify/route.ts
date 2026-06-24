@@ -3,7 +3,7 @@ import { getItem, putItem, queryItems, incrementCounter } from "@/lib/dynamodb";
 import { verifySignature, hashProductRecord, sha256 } from "@/lib/crypto";
 import type { VerificationResult, ThreatAlert } from "@/lib/types";
 
-const SIGNING_SECRET = process.env.SIGNING_SECRET || "authentik-dev-secret";
+const SIGNING_SECRET = process.env.SIGNING_SECRET || "genuproof-dev-secret";
 
 // Simple GeoIP placeholder — in production, use MaxMind or ip-api
 async function geolocateIP(ip: string): Promise<{ country: string; city: string }> {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getItem, queryItems } from "@/lib/dynamodb";
 import { hashProductRecord, verifySignature } from "@/lib/crypto";
 
-const SIGNING_SECRET = process.env.SIGNING_SECRET || "authentik-dev-secret";
+const SIGNING_SECRET = process.env.SIGNING_SECRET || "genuproof-dev-secret";
 
 export async function GET(req: NextRequest) {
   try {
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
 
     const certificate = {
       version: "1.0",
-      issuer: "Authentik Platform",
+      issuer: "GenuProof Platform",
       issuedAt: new Date().toISOString(),
       product: {
         id: product.productId,
@@ -88,14 +88,14 @@ export async function GET(req: NextRequest) {
       verification: {
         authentic: hashValid && signatureValid && chainValid,
         verificationCode: product.verificationCode,
-        verifyUrl: `https://authentik-platform.vercel.app/verify/${product.verificationCode}`,
+        verifyUrl: `https://genuproof.com/verify/${product.verificationCode}`,
         totalScans: product.scanCount || 0,
       },
     };
 
     return NextResponse.json(certificate, {
       headers: {
-        "Content-Disposition": `attachment; filename="authentik-certificate-${product.verificationCode}.json"`,
+        "Content-Disposition": `attachment; filename="genuproof-certificate-${product.verificationCode}.json"`,
       },
     });
   } catch (error) {

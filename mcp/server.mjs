@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-// Authentik MCP Server — wraps all 37 API endpoints as MCP tools
+// GenuProof MCP Server — wraps all 37 API endpoints as MCP tools
 // Usage: node mcp/server.mjs
-// Configure BASE_URL env var to point to your Authentik instance
+// Configure BASE_URL env var to point to your GenuProof instance
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -11,7 +11,7 @@ import { z } from "zod";
 const BASE_URL =
   process.env.AUTHENTIK_BASE_URL ||
   process.env.BASE_URL ||
-  "https://authentik-platform.vercel.app";
+  "https://genuproof.com";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ function toolResult(result) {
 // ── Server ───────────────────────────────────────────────────────────
 
 const server = new McpServer({
-  name: "authentik",
+  name: "genuproof",
   version: "1.0.0",
 });
 
@@ -72,7 +72,7 @@ const server = new McpServer({
 
 server.tool(
   "brands_create",
-  "Register a new brand on the Authentik platform",
+  "Register a new brand on the GenuProof platform",
   { name: z.string(), domain: z.string(), industry: z.string(), logoUrl: z.string().optional() },
   async (args) => toolResult(await apiPost("/api/brands", args))
 );

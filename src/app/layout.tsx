@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Authentik | Product Authentication Platform",
+  title: "GenuProof | Product Authentication Platform",
   description:
     "Cryptographic product authentication. Tamper-evident provenance chains. Real-time counterfeit intelligence.",
 };

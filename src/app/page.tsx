@@ -20,7 +20,7 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                 </svg>
               </div>
-              <span className="text-sm font-medium tracking-wide uppercase">Authentik</span>
+              <span className="text-sm font-medium tracking-wide uppercase">GenuProof</span>
             </Link>
             <div className="flex items-center gap-6">
               <Link href="/explore" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
@@ -378,7 +378,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
               </svg>
             </div>
-            Authentik
+            GenuProof
           </div>
           <div className="flex items-center gap-4">
             <Link href="/status" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">Status</Link>

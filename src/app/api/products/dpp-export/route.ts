@@ -79,8 +79,8 @@ export async function GET(req: NextRequest) {
         signatureAlgorithm: "HMAC-SHA256",
         productHash: product.hash,
         signature: product.signature,
-        verifyUrl: `https://authentik-platform.vercel.app/verify/${product.verificationCode}`,
-        qrUrl: `https://authentik-platform.vercel.app/api/products/qr?code=${product.verificationCode}`,
+        verifyUrl: `https://genuproof.com/verify/${product.verificationCode}`,
+        qrUrl: `https://genuproof.com/api/products/qr?code=${product.verificationCode}`,
       },
 
       // Sustainability (placeholder — would be populated by brand)
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
 
       // DPP metadata
       metadata: {
-        issuer: "Authentik Platform",
+        issuer: "GenuProof Platform",
         issuedAt: new Date().toISOString(),
         expiresAt: null,
         dataCarrier: "QR Code (ISO/IEC 18004)",

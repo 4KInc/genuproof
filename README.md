@@ -1,16 +1,16 @@
-# Authentik
+# GenuProof
 
 **Anti-counterfeiting & product authentication platform.**
 
 Cryptographic certificates that travel with your product from factory to consumer. One scan to verify. One tampered byte to detect. Built on DynamoDB for verification at any scale.
 
-**Live:** https://authentik-platform.vercel.app
+**Live:** https://genuproof.com
 
 ---
 
 ## What It Does
 
-Authentik gives brands cryptographic proof of product authenticity. Every registered product receives a unique SHA-256 hash, HMAC-SHA256 signature, and verification code with QR. As products move through the supply chain, each event is cryptographically linked to the previous one in a tamper-evident hash chain. Consumers scan a QR code to instantly verify authenticity — no app, no wallet, one scan.
+GenuProof gives brands cryptographic proof of product authenticity. Every registered product receives a unique SHA-256 hash, HMAC-SHA256 signature, and verification code with QR. As products move through the supply chain, each event is cryptographically linked to the previous one in a tamper-evident hash chain. Consumers scan a QR code to instantly verify authenticity — no app, no wallet, one scan.
 
 The platform includes real-time threat intelligence powered by DynamoDB Streams, AWS Lambda, and **Gemini 2.5 Flash**: every verification scan is captured by a stream, processed by Lambda for anomaly detection, classified by Gemini AI (severity, attack vector, confidence score, natural-language narrative), and alerts are pushed to the brand's dashboard in real time via Server-Sent Events. The AI operations log records every Gemini call with latency, tokens, and classification results.
 
@@ -50,7 +50,7 @@ AWS Lambda (authentik-threat-detector)        │
   Dashboard lights up in real time (no refresh)
 ```
 
-**Architecture diagram:** https://authentik-platform.vercel.app/architecture.svg
+**Architecture diagram:** https://genuproof.com/architecture.svg
 
 ### DynamoDB Single-Table Design
 
@@ -276,7 +276,7 @@ Alerts are written back to DynamoDB with `source: "lambda-stream"`. The SSE endp
 - Webhook notifications for scans, threats, recalls
 
 ### Anti-Tag-Cloning System
-The most common counterfeiting attack: buy one real product, scan its QR, clone the tag onto hundreds of fakes. Authentik detects this with 5 layers:
+The most common counterfeiting attack: buy one real product, scan its QR, clone the tag onto hundreds of fakes. GenuProof detects this with 5 layers:
 1. **Claim lock:** First consumer scan locks product to device fingerprint
 2. **Velocity detection:** Abnormal scans/day over product lifetime
 3. **Burst detection:** 10+ scans in 1-hour window
@@ -351,7 +351,7 @@ The most common counterfeiting attack: buy one real product, scan its QR, clone 
 
 ```bash
 # Clone
-git clone https://github.com/4KInc/authentik-platform.git
+git clone https://github.com/4KInc/genuproof.git
 cd authentik-platform
 
 # Install
@@ -399,7 +399,7 @@ npm run dev
 | Nautilus Travel Time 40mm | `FshGQLRNsr4p` | Le Locle to Tokyo (6 events) |
 | Aviator Titanium Polarized | `IebJZgMHdD-h` | Belluno to Beverly Hills (4 events) |
 
-**Verify any product:** `https://authentik-platform.vercel.app/verify/{code}`
+**Verify any product:** `https://genuproof.com/verify/{code}`
 
 ## Testing
 

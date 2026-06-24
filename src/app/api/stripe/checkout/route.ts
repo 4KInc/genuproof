@@ -58,12 +58,12 @@ export async function POST(req: NextRequest) {
     if (!stripe) {
       return NextResponse.json({
         plan: PLANS[plan],
-        message: "Stripe not configured. Contact sales@authentik.com",
+        message: "Stripe not configured. Contact sales@genuproof.com",
       });
     }
 
     const planInfo = PLANS[plan];
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://authentik-platform.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://genuproof.com";
 
     // Use pre-created price ID if available, otherwise create inline
     const lineItem = planInfo.priceId
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: "usd" as const,
             product_data: {
-              name: `Authentik ${planInfo.name}`,
+              name: `GenuProof ${planInfo.name}`,
               description: `${planInfo.products}. ${planInfo.features.join(", ")}`,
             },
             unit_amount: planInfo.amount,

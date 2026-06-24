@@ -146,7 +146,7 @@ export default function VerifyPage() {
           </p>
           <div className="text-center mt-4">
             <Link href="/" className="text-[12px] text-primary hover:underline">
-              Return to Authentik
+              Return to GenuProof
             </Link>
           </div>
         </div>
@@ -473,7 +473,7 @@ export default function VerifyPage() {
         {/* Footer */}
         <div className="mt-10 pt-6 border-t border-border flex items-center justify-between">
           <Link href="/" className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
-            Powered by Authentik
+            Powered by GenuProof
           </Link>
           <Link href="/verify" className="text-[11px] text-primary hover:underline">
             Verify another product

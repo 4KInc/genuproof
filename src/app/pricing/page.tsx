@@ -11,7 +11,7 @@ const PLANS = [
     price: "Free",
     period: "",
     products: "10 products",
-    description: "Try Authentik with basic product authentication.",
+    description: "Try GenuProof with basic product authentication.",
     features: [
       "10 product registrations",
       "SHA-256 + HMAC verification",

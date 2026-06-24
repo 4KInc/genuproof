@@ -220,7 +220,7 @@ export default function Dashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                 </svg>
               </div>
-              <span className="text-[12px] font-medium tracking-wide uppercase">Authentik</span>
+              <span className="text-[12px] font-medium tracking-wide uppercase">GenuProof</span>
             </Link>
             <div className="mt-3 flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-primary" />

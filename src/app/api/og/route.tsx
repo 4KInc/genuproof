@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
-  const brand = req.nextUrl.searchParams.get("brand") || "Authentik";
+  const brand = req.nextUrl.searchParams.get("brand") || "GenuProof";
   const product = req.nextUrl.searchParams.get("product") || "Product Verification";
   const status = req.nextUrl.searchParams.get("status") || "authentic";
   const hash = req.nextUrl.searchParams.get("hash") || "";
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
             {hash ? hash.slice(0, 32) + "..." : "SHA-256 VERIFIED"}
           </div>
           <div style={{ fontSize: 11, color: "#6b696060" }}>
-            authentik-platform.vercel.app
+            genuproof.com
           </div>
         </div>
       </div>

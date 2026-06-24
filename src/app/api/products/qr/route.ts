@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://authentik-platform.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://genuproof.com";
     const verifyUrl = code
       ? `${baseUrl}/verify/${code}`
       : `${baseUrl}/verify?pid=${productId}`;

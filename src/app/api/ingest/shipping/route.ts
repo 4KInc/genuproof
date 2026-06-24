@@ -27,7 +27,7 @@ interface ShippingWebhook {
   apiKey?: string;
 }
 
-// Map carrier statuses to Authentik event types
+// Map carrier statuses to GenuProof event types
 const STATUS_MAP: Record<string, string> = {
   picked_up: "shipped",
   in_transit: "shipped",

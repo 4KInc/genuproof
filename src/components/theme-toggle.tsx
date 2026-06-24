@@ -6,7 +6,7 @@ export function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("authentik-theme");
+    const saved = localStorage.getItem("genuproof-theme");
     if (saved === "dark") {
       setDark(true);
       document.documentElement.classList.add("dark");
@@ -18,10 +18,10 @@ export function ThemeToggle() {
     setDark(next);
     if (next) {
       document.documentElement.classList.add("dark");
-      localStorage.setItem("authentik-theme", "dark");
+      localStorage.setItem("genuproof-theme", "dark");
     } else {
       document.documentElement.classList.remove("dark");
-      localStorage.setItem("authentik-theme", "light");
+      localStorage.setItem("genuproof-theme", "light");
     }
   };
 

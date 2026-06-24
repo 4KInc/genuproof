@@ -27,7 +27,7 @@ export function SiteNav() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
               </svg>
             </div>
-            <span className="text-sm font-medium tracking-wide uppercase">Authentik</span>
+            <span className="text-sm font-medium tracking-wide uppercase">GenuProof</span>
           </Link>
           <div className="flex items-center gap-6">
             {NAV_LINKS.map((link) => (

@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
 }
 
 function getWebhookUrl(type: string): string {
-  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://authentik-platform.vercel.app";
+  const base = process.env.NEXT_PUBLIC_BASE_URL || "https://genuproof.com";
   const map: Record<string, string> = {
     fedex: `${base}/api/ingest/shipping`,
     dhl: `${base}/api/ingest/shipping`,

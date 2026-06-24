@@ -1,9 +1,9 @@
-// Complete Authentik demo — every feature, every page, every flow
+// Complete GenuProof demo — every feature, every page, every flow
 // Target: 5-7 minutes, comprehensive walkthrough
 
 import { chromium } from "playwright";
 
-const BASE = "https://authentik-platform.vercel.app";
+const BASE = "https://genuproof.com";
 const WATCH_CODE = "wfPHybaFV3_a";
 const HANDBAG_CODE = "pOszdB-1n6IC";
 const PERFUME_CODE = "27dEHQymVRMl";

@@ -9,7 +9,7 @@ const INTEGRATIONS = [
     name: "Shipping Carriers",
     endpoint: "POST /api/ingest/shipping",
     carriers: ["FedEx", "DHL", "UPS", "USPS", "Chronopost"],
-    description: "Automatically tracks shipments. When a carrier fires a tracking webhook (picked up, in transit, delivered), the event is mapped to Authentik's provenance chain.",
+    description: "Automatically tracks shipments. When a carrier fires a tracking webhook (picked up, in transit, delivered), the event is mapped to GenuProof's provenance chain.",
     example: {
       trackingNumber: "FX-2026-8847291",
       carrier: "FedEx",
@@ -129,7 +129,7 @@ export default function IntegrationsPage() {
             <div className="text-primary">  |</div>
             <div>  POST /api/ingest/&#123;shipping|pos|warehouse&#125;</div>
             <div className="text-primary">  |</div>
-            <div>  Authentik maps carrier status to event type</div>
+            <div>  GenuProof maps carrier status to event type</div>
             <div className="text-primary">  |</div>
             <div>  Fetches last event hash for this product</div>
             <div className="text-primary">  |</div>

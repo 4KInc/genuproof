@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     await putItem(integration);
 
     // Build the webhook URL for this integration
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://authentik-platform.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://genuproof.com";
     const endpointMap: Record<string, string> = {
       fedex: "/api/ingest/shipping",
       dhl: "/api/ingest/shipping",
@@ -100,7 +100,7 @@ function getSetupInstructions(type: string, webhookUrl: string, ingestKey: strin
       step2: `Set webhook URL to: ${webhookUrl}`,
       step3: "Subscribe to events: PICKED_UP, IN_TRANSIT, DELIVERED",
       step4: `Add header X-Ingest-Key: ${ingestKey}`,
-      step5: "Map your tracking numbers to Authentik product IDs in your shipping system",
+      step5: "Map your tracking numbers to GenuProof product IDs in your shipping system",
     },
     dhl: {
       step1: "Log into DHL Developer Portal → Shipment Tracking → Webhooks",
@@ -114,35 +114,35 @@ function getSetupInstructions(type: string, webhookUrl: string, ingestKey: strin
       step2: `Set endpoint URL to: ${webhookUrl}`,
       step3: "Subscribe to: Pickup, In Transit, Delivered, Exception",
       step4: `Add header X-Ingest-Key: ${ingestKey}`,
-      step5: "Map UPS tracking numbers to Authentik products in your OMS",
+      step5: "Map UPS tracking numbers to GenuProof products in your OMS",
     },
     shopify: {
       step1: "Shopify Admin → Settings → Notifications → Webhooks → Create Webhook",
       step2: "Event: Order payment, Format: JSON",
       step3: `URL: ${webhookUrl}`,
-      step4: "Map Shopify SKUs to Authentik verification codes in your product catalog",
-      step5: "Authentik will auto-create 'sold' events for each order line item",
+      step4: "Map Shopify SKUs to GenuProof verification codes in your product catalog",
+      step5: "GenuProof will auto-create 'sold' events for each order line item",
     },
     square: {
       step1: "Square Developer Dashboard → Webhooks → Add Webhook",
       step2: `URL: ${webhookUrl}`,
       step3: "Subscribe to: payment.completed",
       step4: `Add header X-Ingest-Key: ${ingestKey}`,
-      step5: "Map Square catalog item IDs to Authentik product IDs",
+      step5: "Map Square catalog item IDs to GenuProof product IDs",
     },
     woocommerce: {
       step1: "WooCommerce → Settings → Advanced → Webhooks → Add Webhook",
       step2: "Topic: Order updated, Status: Active",
       step3: `Delivery URL: ${webhookUrl}`,
       step4: `Secret: ${ingestKey}`,
-      step5: "Use WooCommerce SKU field to store Authentik verification codes",
+      step5: "Use WooCommerce SKU field to store GenuProof verification codes",
     },
     stripe: {
       step1: "Stripe Dashboard → Developers → Webhooks → Add Endpoint",
       step2: `Endpoint URL: ${webhookUrl}`,
       step3: "Events: checkout.session.completed, payment_intent.succeeded",
-      step4: `Add metadata key 'authentik_key': '${ingestKey}'`,
-      step5: "Include Authentik productId in Stripe metadata for each line item",
+      step4: `Add metadata key 'genuproof_key': '${ingestKey}'`,
+      step5: "Include GenuProof productId in Stripe metadata for each line item",
     },
     wms_custom: {
       step1: "Configure your WMS to send HTTP POST on scan events",

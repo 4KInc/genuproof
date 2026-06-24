@@ -156,7 +156,7 @@ export default function StatusPage() {
 
         <div className="mt-8 text-center">
           <Link href="/" className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
-            Back to Authentik
+            Back to GenuProof
           </Link>
         </div>
       </div>

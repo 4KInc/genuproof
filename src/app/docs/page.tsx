@@ -146,7 +146,7 @@ export default function DocsPage() {
         </h1>
         <p className="text-[13px] text-muted-foreground leading-relaxed mb-10 max-w-lg">
           RESTful API for product registration, verification, provenance tracking,
-          and threat intelligence. All responses are JSON. Base URL: <code className="font-mono text-[12px] bg-secondary px-1.5 py-0.5 border border-border">https://authentik-platform.vercel.app</code>
+          and threat intelligence. All responses are JSON. Base URL: <code className="font-mono text-[12px] bg-secondary px-1.5 py-0.5 border border-border">https://genuproof.com</code>
         </p>
 
         <div className="space-y-0 border-t border-border">

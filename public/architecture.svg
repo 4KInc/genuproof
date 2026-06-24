@@ -16,7 +16,7 @@
 
   <!-- Title -->
   <text x="40" y="38" font-size="10" fill="#6b6960" letter-spacing="3" font-weight="500">SYSTEM ARCHITECTURE</text>
-  <text x="40" y="62" font-size="22" fill="#1a1a18" font-weight="600">Authentik Platform</text>
+  <text x="40" y="62" font-size="22" fill="#1a1a18" font-weight="600">GenuProof Platform</text>
   <text x="280" y="62" font-size="12" fill="#6b6960">Anti-Counterfeiting with DynamoDB Single-Table Design</text>
 
   <!-- ═══ CLIENT LAYER ═══ -->

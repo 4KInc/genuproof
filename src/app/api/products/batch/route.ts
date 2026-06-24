@@ -9,7 +9,7 @@ import {
   sha256,
 } from "@/lib/crypto";
 
-const SIGNING_SECRET = process.env.SIGNING_SECRET || "authentik-dev-secret";
+const SIGNING_SECRET = process.env.SIGNING_SECRET || "genuproof-dev-secret";
 
 interface BatchProduct {
   name: string;

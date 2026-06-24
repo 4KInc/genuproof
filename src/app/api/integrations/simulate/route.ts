@@ -9,7 +9,7 @@ import {
   sha256,
 } from "@/lib/crypto";
 
-const SIGNING_SECRET = process.env.SIGNING_SECRET || "authentik-dev-secret";
+const SIGNING_SECRET = process.env.SIGNING_SECRET || "genuproof-dev-secret";
 
 // Simulate a full product lifecycle with automated supply chain events
 // Creates a product and plays out its entire journey over a realistic timeline
@@ -210,7 +210,7 @@ export async function POST(req: NextRequest) {
       previousHash = eventHash;
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://authentik-platform.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://genuproof.com";
 
     return NextResponse.json({
       success: true,

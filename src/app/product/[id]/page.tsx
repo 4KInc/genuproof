@@ -171,14 +171,14 @@ export default function ProductPage() {
             <div className="mt-3 flex gap-2">
               <a
                 href={`/api/products/qr?code=${product.verificationCode}&format=png`}
-                download={`authentik-${product.verificationCode}.png`}
+                download={`genuproof-${product.verificationCode}.png`}
                 className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
               >
                 PNG
               </a>
               <a
                 href={`/api/products/qr?code=${product.verificationCode}&format=svg`}
-                download={`authentik-${product.verificationCode}.svg`}
+                download={`genuproof-${product.verificationCode}.svg`}
                 className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
               >
                 SVG

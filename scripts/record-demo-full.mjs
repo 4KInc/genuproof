@@ -1,4 +1,4 @@
-// Authentik Full Demo — every page, every feature, every flow
+// GenuProof Full Demo — every page, every feature, every flow
 // Target: 8-12 minutes, comprehensive showcase for XPRIZE submission
 // Covers: Landing, Verification (5 products), Tag Cloning, Dashboard (all 5 tabs),
 //         Pricing, Ops Log, Integrations + Simulation, Analytics, Explore, Compare,
@@ -6,7 +6,7 @@
 
 import { chromium } from "playwright";
 
-const BASE = "https://authentik-platform.vercel.app";
+const BASE = "https://genuproof.com";
 const WATCH_CODE = "wfPHybaFV3_a";
 const HANDBAG_CODE = "pOszdB-1n6IC";
 const PERFUME_CODE = "27dEHQymVRMl";

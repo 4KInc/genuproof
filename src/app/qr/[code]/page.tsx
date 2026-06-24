@@ -155,7 +155,7 @@ export default function QRPage() {
               </Link>
               <a
                 href={`/api/products/qr?code=${code}&format=png`}
-                download={`authentik-${code}.png`}
+                download={`genuproof-${code}.png`}
                 className="text-[11px] px-4 py-2 border border-border hover:bg-secondary transition-colors"
               >
                 Download QR

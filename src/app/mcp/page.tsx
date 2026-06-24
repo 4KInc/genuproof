@@ -96,10 +96,10 @@ const TOTAL_TOOLS = TOOLS.reduce((sum, cat) => sum + cat.tools.length, 0);
 const CONFIG_CLAUDE_CODE = `// Claude Code — .claude/settings.json or .mcp.json
 {
   "mcpServers": {
-    "authentik": {
+    "genuproof": {
       "command": "node",
       "args": ["mcp/server.mjs"],
-      "cwd": "/path/to/authentik-platform"
+      "cwd": "/path/to/genuproof"
     }
   }
 }`;
@@ -107,11 +107,11 @@ const CONFIG_CLAUDE_CODE = `// Claude Code — .claude/settings.json or .mcp.jso
 const CONFIG_CLAUDE_DESKTOP = `// Claude Desktop — claude_desktop_config.json
 {
   "mcpServers": {
-    "authentik": {
+    "genuproof": {
       "command": "node",
-      "args": ["/absolute/path/to/authentik-platform/mcp/server.mjs"],
+      "args": ["/absolute/path/to/genuproof/mcp/server.mjs"],
       "env": {
-        "AUTHENTIK_BASE_URL": "https://authentik-platform.vercel.app"
+        "AUTHENTIK_BASE_URL": "https://genuproof.com"
       }
     }
   }
@@ -120,10 +120,10 @@ const CONFIG_CLAUDE_DESKTOP = `// Claude Desktop — claude_desktop_config.json
 const CONFIG_CURSOR = `// Cursor — .cursor/mcp.json
 {
   "mcpServers": {
-    "authentik": {
+    "genuproof": {
       "command": "node",
       "args": ["mcp/server.mjs"],
-      "cwd": "/path/to/authentik-platform"
+      "cwd": "/path/to/genuproof"
     }
   }
 }`;
@@ -134,7 +134,7 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 const transport = new StdioClientTransport({
   command: "node",
   args: ["mcp/server.mjs"],
-  cwd: "/path/to/authentik-platform",
+  cwd: "/path/to/genuproof",
 });
 
 const client = new Client({ name: "my-app", version: "1.0" });
@@ -182,7 +182,7 @@ export default function McpPage() {
           MCP <em className="text-accent">Server</em>
         </h1>
         <p className="text-[13px] text-muted-foreground leading-relaxed mb-4 max-w-lg">
-          Connect any AI assistant to Authentik&apos;s full platform. Register brands, verify products,
+          Connect any AI assistant to GenuProof&apos;s full platform. Register brands, verify products,
           track supply chains, monitor threats, and export EU DPP compliance data — all through natural language.
         </p>
 
@@ -217,7 +217,7 @@ export default function McpPage() {
               <span className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
               <div>
                 <p className="text-[13px] text-foreground mb-1">Clone the repository</p>
-                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border p-3">git clone https://github.com/4KInc/authentik-platform.git && cd authentik-platform && npm install</pre>
+                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border p-3">git clone https://github.com/4KInc/genuproof.git && cd genuproof && npm install</pre>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -278,7 +278,7 @@ export default function McpPage() {
           </div>
           <p className="text-[12px] text-muted-foreground mt-3">
             Set <code className="font-mono text-[11px] bg-secondary px-1 py-0.5 border border-border">AUTHENTIK_BASE_URL</code> to
-            point to a different instance. Defaults to <code className="font-mono text-[11px] bg-secondary px-1 py-0.5 border border-border">https://authentik-platform.vercel.app</code>
+            point to a different instance. Defaults to <code className="font-mono text-[11px] bg-secondary px-1 py-0.5 border border-border">https://genuproof.com</code>
           </p>
         </section>
 
@@ -312,7 +312,7 @@ export default function McpPage() {
             Tools Reference
           </h2>
           <p className="text-[13px] text-muted-foreground mb-6">
-            {TOTAL_TOOLS} tools across {TOOLS.length} categories. Each tool maps directly to an Authentik API endpoint.
+            {TOTAL_TOOLS} tools across {TOOLS.length} categories. Each tool maps directly to an GenuProof API endpoint.
           </p>
 
           <div className="border-t border-border">
@@ -394,7 +394,7 @@ export default function McpPage() {
         |
         | HTTP fetch (GET/POST/DELETE)
         |
-   Authentik API (Vercel)
+   GenuProof API (Vercel)
     |         |          |
  DynamoDB   Lambda    Gemini 2.5
  (single    (threat   (AI threat
@@ -402,7 +402,7 @@ export default function McpPage() {
           </div>
           <div className="mt-4 space-y-2 text-[13px] text-muted-foreground">
             <p>
-              The MCP server translates natural-language tool calls into HTTP requests against the Authentik API.
+              The MCP server translates natural-language tool calls into HTTP requests against the GenuProof API.
               Every tool returns structured JSON that the AI assistant can reason over and present to the user.
             </p>
             <p>
@@ -418,8 +418,8 @@ export default function McpPage() {
           <h2 className="font-[family-name:var(--font-display)] text-xl mb-4">Environment Variables</h2>
           <div className="border-t border-border">
             {[
-              { name: "AUTHENTIK_BASE_URL", desc: "Base URL of the Authentik instance", default: "https://authentik-platform.vercel.app" },
-              { name: "BASE_URL", desc: "Fallback base URL (if AUTHENTIK_BASE_URL not set)", default: "https://authentik-platform.vercel.app" },
+              { name: "AUTHENTIK_BASE_URL", desc: "Base URL of the GenuProof instance", default: "https://genuproof.com" },
+              { name: "BASE_URL", desc: "Fallback base URL (if AUTHENTIK_BASE_URL not set)", default: "https://genuproof.com" },
             ].map((env) => (
               <div key={env.name} className="flex items-start gap-4 py-3 border-b border-border">
                 <code className="font-mono text-[11px] text-primary whitespace-nowrap mt-0.5">{env.name}</code>
@@ -444,7 +444,7 @@ export default function McpPage() {
             Dashboard
           </Link>
           <a
-            href="https://github.com/4KInc/authentik-platform"
+            href="https://github.com/4KInc/genuproof"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[12px] text-muted-foreground hover:text-foreground transition-colors"
