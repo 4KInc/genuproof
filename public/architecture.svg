@@ -236,11 +236,11 @@
   <!-- ═══ TESTING ═══ -->
   <rect x="40" y="650" width="535" height="70" fill="white" stroke="#d4cfc4" stroke-width="1"/>
   <text x="55" y="670" font-size="8" fill="#6b6960" letter-spacing="1">TESTING AND QUALITY</text>
-  <text x="55" y="688" font-size="9" fill="#1a1a18" font-weight="500">153 Playwright e2e tests</text>
+  <text x="55" y="688" font-size="9" fill="#1a1a18" font-weight="500">159 Playwright e2e tests</text>
   <text x="55" y="702" font-size="8" fill="#6b6960">9 test suites: API endpoints, navigation, user flows, edge cases, UI interactions</text>
   <text x="55" y="714" font-size="8" fill="#6b6960">All 37 API endpoints tested. All 15 pages tested. All 5 demo products verified.</text>
 
   <!-- Footer -->
   <text x="40" y="800" font-size="9" fill="#6b6960">Next.js 16 | TypeScript | Tailwind CSS | AWS DynamoDB | AWS Lambda | Gemini 2.5 Flash | Stripe | Vercel | Playwright</text>
-  <text x="1200" y="800" font-size="9" fill="#b8860b" font-weight="500">authentik-platform.vercel.app</text>
+  <text x="1200" y="800" font-size="9" fill="#b8860b" font-weight="500">genuproof.com</text>
 </svg>
