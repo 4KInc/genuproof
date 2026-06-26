@@ -74,6 +74,8 @@ export interface ThreatAlert {
   details: string;
   timestamp: string;
   resolved: boolean;
+  country?: string;
+  city?: string;
 }
 
 export interface VerificationResult {
