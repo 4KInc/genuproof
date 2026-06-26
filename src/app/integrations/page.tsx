@@ -260,11 +260,13 @@ export default function IntegrationsPage() {
 function SimulationPanel() {
   const [brandId, setBrandId] = useState("");
   const [brands, setBrands] = useState<Array<{ id: string; name: string }>>([]);
+  const [products, setProducts] = useState<Array<{ name: string; category?: string }>>([]);
   const [productName, setProductName] = useState("");
   const [journey, setJourney] = useState("luxury_watch");
   const [simulating, setSimulating] = useState(false);
   const [simResult, setSimResult] = useState<Record<string, unknown> | null>(null);
   const [brandsLoaded, setBrandsLoaded] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(false);
 
   // Load brands on first interaction
   const loadBrands = async () => {
@@ -274,10 +276,38 @@ function SimulationPanel() {
       const data = await res.json();
       if (res.ok && data.brands) {
         setBrands(data.brands);
-        if (data.brands.length > 0) setBrandId(data.brands[0].id);
+        if (data.brands.length > 0) {
+          const firstId = data.brands[0].id;
+          setBrandId(firstId);
+          loadProducts(firstId);
+        }
       }
     } catch {}
     setBrandsLoaded(true);
+  };
+
+  const loadProducts = async (bid: string) => {
+    setProductsLoading(true);
+    setProductName("");
+    try {
+      const res = await fetch(`/api/products/list?brandId=${bid}`);
+      const data = await res.json();
+      if (res.ok && data.products) {
+        setProducts(data.products.map((p: Record<string, unknown>) => ({
+          name: p.name as string,
+          category: p.category as string | undefined,
+        })));
+      } else {
+        setProducts([]);
+      }
+    } catch { setProducts([]); }
+    finally { setProductsLoading(false); }
+  };
+
+  const handleBrandChange = (bid: string) => {
+    setBrandId(bid);
+    if (bid) loadProducts(bid);
+    else { setProducts([]); setProductName(""); }
   };
 
   const runSimulation = async () => {
@@ -318,7 +348,7 @@ function SimulationPanel() {
           <label className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Brand</label>
           <select
             value={brandId}
-            onChange={(e) => setBrandId(e.target.value)}
+            onChange={(e) => handleBrandChange(e.target.value)}
             onFocus={loadBrands}
             className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all cursor-pointer rounded-md"
           >
@@ -329,43 +359,34 @@ function SimulationPanel() {
           </select>
         </div>
         <div>
-          <label className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Product Name</label>
+          <label className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Product</label>
           <select
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
-            className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all cursor-pointer rounded-md"
+            disabled={!brandId || productsLoading}
+            className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all cursor-pointer rounded-md disabled:opacity-50"
           >
-            <option value="">Select product</option>
-            <optgroup label="Watches">
-              <option value="Platinum Perpetual Calendar">Platinum Perpetual Calendar</option>
-              <option value="Royal Oak Offshore 44mm">Royal Oak Offshore 44mm</option>
-              <option value="Nautilus Moon Phase">Nautilus Moon Phase</option>
-              <option value="Santos Chronograph">Santos Chronograph</option>
-              <option value="Speedmaster Professional">Speedmaster Professional</option>
-            </optgroup>
-            <optgroup label="Handbags">
-              <option value="Birkin 35 Togo Leather">Birkin 35 Togo Leather</option>
-              <option value="Classic Flap Caviar Medium">Classic Flap Caviar Medium</option>
-              <option value="Bamboo Top Handle">Bamboo Top Handle</option>
-              <option value="Puzzle Bag Small">Puzzle Bag Small</option>
-            </optgroup>
-            <optgroup label="Jewelry">
-              <option value="Serpentine Gold Cuff">Serpentine Gold Cuff</option>
-              <option value="Trinity Ring Platinum">Trinity Ring Platinum</option>
-              <option value="Alhambra Diamond Necklace">Alhambra Diamond Necklace</option>
-            </optgroup>
-            <optgroup label="Fragrances">
-              <option value="Oud Royale EDP 100ml">Oud Royale EDP 100ml</option>
-              <option value="Rose Absolute Parfum 50ml">Rose Absolute Parfum 50ml</option>
-            </optgroup>
-            <optgroup label="Electronics">
-              <option value="Studio Headphones Pro">Studio Headphones Pro</option>
-              <option value="Wireless Speaker Reference">Wireless Speaker Reference</option>
-            </optgroup>
-            <optgroup label="Pharmaceuticals">
-              <option value="Insulin Pen 100U/mL">Insulin Pen 100U/mL</option>
-              <option value="Cardiac Stent Model X">Cardiac Stent Model X</option>
-            </optgroup>
+            <option value="">{productsLoading ? "Loading products..." : products.length === 0 ? (brandId ? "No products found" : "Select a brand first") : "Select product"}</option>
+            {(() => {
+              const grouped = new Map<string, string[]>();
+              for (const p of products) {
+                const cat = p.category || "Other";
+                if (!grouped.has(cat)) grouped.set(cat, []);
+                grouped.get(cat)!.push(p.name);
+              }
+              if (grouped.size <= 1) {
+                return products.map((p) => (
+                  <option key={p.name} value={p.name}>{p.name}</option>
+                ));
+              }
+              return [...grouped.entries()].map(([cat, names]) => (
+                <optgroup key={cat} label={cat}>
+                  {names.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </optgroup>
+              ));
+            })()}
           </select>
         </div>
         <div>
