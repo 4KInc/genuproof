@@ -149,9 +149,25 @@ export async function POST(req: NextRequest) {
       brandId,
     };
 
+    const productIndex = {
+      PK: "PRODUCT_INDEX",
+      SK: `PRODUCT#${now}#${productId}`,
+      productId, brandId, name: productName,
+      brandName: brand.name as string,
+      sku: sku || null,
+      category: category || null,
+      description: null,
+      status: "active",
+      verificationCode,
+      hash,
+      createdAt: now,
+      scanCount: 0,
+    };
+
     await Promise.all([
       putItem(product),
       putItem(codeLookup),
+      putItem(productIndex),
       incrementCounter(`BRAND#${brandId}`, "STATS", "productCount"),
     ]);
 
@@ -161,9 +177,9 @@ export async function POST(req: NextRequest) {
 
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
-      // Spread events over simulated time (1-4 hours apart)
+      // Spread events over simulated time (deterministic 90-min intervals to preserve sort order)
       const eventTime = new Date(
-        new Date(now).getTime() + i * (1 + Math.random() * 3) * 3600000
+        new Date(now).getTime() + (i + 1) * 90 * 60 * 1000
       ).toISOString();
 
       const eventHash = hashEvent({
