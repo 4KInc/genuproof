@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { SiteNav } from "@/components/site-nav";
 import { VerificationBadge } from "@/components/verification-badge";
@@ -11,6 +11,7 @@ interface VerificationResult {
   authentic: boolean;
   product?: {
     productId: string;
+    brandId: string;
     brandName: string;
     name: string;
     sku?: string;
@@ -46,8 +47,18 @@ interface VerificationResult {
 }
 
 export default function VerifyPage() {
+  return (
+    <Suspense>
+      <VerifyPageInner />
+    </Suspense>
+  );
+}
+
+function VerifyPageInner() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const code = params.code as string;
+  const brandParam = searchParams.get("brand");
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [claimDone, setClaimDone] = useState(false);
@@ -189,8 +200,8 @@ export default function VerifyPage() {
           </div>
         )}
 
-        {/* Claim Status / Claim Button */}
-        {product && authentic && (
+        {/* Claim Status / Claim Button — hidden for the brand that owns this product */}
+        {product && authentic && !(brandParam && brandParam === product.brandId) && (
           <div className="mb-6 animate-reveal delay-2">
             {result.claim?.claimed ? (
               <div>

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let ogUrl = `${baseUrl}/api/og?status=authentic`;
 
   try {
-    const res = await fetch(`${baseUrl}/api/products/verify?code=${code}`, {
+    const res = await fetch(`${baseUrl}/api/products/verify?code=${code}&metadata=true`, {
       next: { revalidate: 60 },
     });
     if (res.ok) {

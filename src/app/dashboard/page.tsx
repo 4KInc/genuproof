@@ -510,7 +510,7 @@ export default function Dashboard() {
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                              <Link href={`/verify/${p.verificationCode}`} className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">Verify</Link>
+                              <Link href={`/verify/${p.verificationCode}?brand=${brandId}`} className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">View</Link>
                               <Link href={`/qr/${p.verificationCode}`} className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">QR</Link>
                               <Link href={`/product/${p.productId}`} className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">Detail</Link>
                               <a href={`/api/products/certificate?code=${p.verificationCode}`} target="_blank" className="text-[10px] px-2.5 py-1 border border-border hover:bg-secondary transition-colors">JSON</a>

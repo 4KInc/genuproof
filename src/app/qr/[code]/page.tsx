@@ -26,7 +26,7 @@ export default function QRPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/products/verify?code=${code}`);
+        const res = await fetch(`/api/products/verify?code=${code}&metadata=true`);
         const data = await res.json();
         setInfo(data);
       } catch {

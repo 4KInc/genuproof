@@ -44,7 +44,7 @@ export default function ProductPage() {
     async function load() {
       try {
         const [verifyRes, scansRes] = await Promise.all([
-          fetch(`/api/products/verify?productId=${id}`),
+          fetch(`/api/products/verify?productId=${id}&metadata=true`),
           fetch(`/api/scans?productId=${id}&limit=20`),
         ]);
         const verifyData = await verifyRes.json();

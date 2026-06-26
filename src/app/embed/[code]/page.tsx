@@ -13,7 +13,7 @@ export default function EmbedBadge() {
   useEffect(() => {
     async function check() {
       try {
-        const res = await fetch(`/api/products/verify?code=${code}`);
+        const res = await fetch(`/api/products/verify?code=${code}&metadata=true`);
         const data = await res.json();
         setAuthentic(data.authentic);
         setProductName(data.product?.name || "");

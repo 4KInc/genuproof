@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
   try {
     const code = req.nextUrl.searchParams.get("code");
     const productId = req.nextUrl.searchParams.get("productId");
+    const metadataOnly = req.nextUrl.searchParams.get("metadata") === "true";
 
     if (!code && !productId) {
       return NextResponse.json(
@@ -91,90 +92,118 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Record this scan
     const now = new Date().toISOString();
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("x-real-ip") ||
       "unknown";
-    const geo = await geolocateIP(ip);
 
-    const scanRecord = {
-      PK: `PRODUCT#${resolvedProductId}`,
-      SK: `SCAN#${now}`,
-      productId: resolvedProductId,
-      timestamp: now,
-      ip,
-      country: geo.country,
-      city: geo.city,
-      userAgent: req.headers.get("user-agent") || "unknown",
-      result: hashMatch && signatureValid ? "authentic" : "suspicious",
-    };
-
-    await Promise.all([
-      putItem(scanRecord),
-      incrementCounter(
-        `PRODUCT#${resolvedProductId}`,
-        "META",
-        "scanCount"
-      ),
-      incrementCounter(
-        `BRAND#${product.brandId}`,
-        "STATS",
-        "scanCount"
-      ),
-    ]);
-
-    // Anomaly detection: check recent scans for this product
     const warnings: string[] = [];
-    const recentScans = await queryItems(
-      `PRODUCT#${resolvedProductId}`,
-      "SCAN#",
-      { limit: 20 }
-    );
 
-    // Detect geographic anomaly: same product scanned from different countries in short window
-    const countries = new Set(
-      recentScans
-        .filter((s) => {
-          const scanTime = new Date(s.timestamp as string).getTime();
-          return Date.now() - scanTime < 24 * 60 * 60 * 1000; // last 24h
-        })
-        .map((s) => s.country)
-    );
-    if (countries.size > 2) {
-      warnings.push(
-        `Product scanned from ${countries.size} different countries in 24h`
-      );
-      await createThreatAlert({
-        brandId: (resolvedBrandId || product.brandId) as string,
-        type: "geographic_anomaly",
-        severity: "high",
-        productId: resolvedProductId!,
-        details: `Scanned from ${[...countries].join(", ")} in 24h window`,
-        timestamp: now,
-        resolved: false,
-      });
-    }
+    // Only record scans and run anomaly detection for real verifications (not metadata/OG fetches)
+    if (!metadataOnly) {
+      const geo = await geolocateIP(ip);
 
-    // Detect burst scanning: many scans in short window
-    const recentBurstScans = recentScans.filter((s) => {
-      const scanTime = new Date(s.timestamp as string).getTime();
-      return Date.now() - scanTime < 60 * 60 * 1000; // last hour
-    });
-    if (recentBurstScans.length > 10) {
-      warnings.push(
-        `Unusual scan volume: ${recentBurstScans.length} scans in the last hour`
-      );
-      await createThreatAlert({
-        brandId: (resolvedBrandId || product.brandId) as string,
-        type: "burst_scan",
-        severity: "medium",
-        productId: resolvedProductId!,
-        details: `${recentBurstScans.length} scans in 1 hour`,
+      const scanRecord = {
+        PK: `PRODUCT#${resolvedProductId}`,
+        SK: `SCAN#${now}`,
+        productId: resolvedProductId,
         timestamp: now,
-        resolved: false,
+        ip,
+        country: geo.country,
+        city: geo.city,
+        userAgent: req.headers.get("user-agent") || "unknown",
+        result: hashMatch && signatureValid ? "authentic" : "suspicious",
+      };
+
+      await Promise.all([
+        putItem(scanRecord),
+        incrementCounter(
+          `PRODUCT#${resolvedProductId}`,
+          "META",
+          "scanCount"
+        ),
+        incrementCounter(
+          `BRAND#${product.brandId}`,
+          "STATS",
+          "scanCount"
+        ),
+      ]);
+
+      // Anomaly detection: check recent scans for this product
+      const recentScans = await queryItems(
+        `PRODUCT#${resolvedProductId}`,
+        "SCAN#",
+        { limit: 20 }
+      );
+
+      // Detect geographic anomaly: same product scanned from different countries in short window
+      const countries = new Set(
+        recentScans
+          .filter((s) => {
+            const scanTime = new Date(s.timestamp as string).getTime();
+            return Date.now() - scanTime < 24 * 60 * 60 * 1000; // last 24h
+          })
+          .map((s) => s.country)
+      );
+      if (countries.size > 2) {
+        warnings.push(
+          `Product scanned from ${countries.size} different countries in 24h`
+        );
+        await createThreatAlert({
+          brandId: (resolvedBrandId || product.brandId) as string,
+          type: "geographic_anomaly",
+          severity: "high",
+          productId: resolvedProductId!,
+          details: `Scanned from ${[...countries].join(", ")} in 24h window`,
+          timestamp: now,
+          resolved: false,
+        });
+      }
+
+      // Detect burst scanning: many scans in short window
+      const recentBurstScans = recentScans.filter((s) => {
+        const scanTime = new Date(s.timestamp as string).getTime();
+        return Date.now() - scanTime < 60 * 60 * 1000; // last hour
       });
+      if (recentBurstScans.length > 10) {
+        warnings.push(
+          `Unusual scan volume: ${recentBurstScans.length} scans in the last hour`
+        );
+        await createThreatAlert({
+          brandId: (resolvedBrandId || product.brandId) as string,
+          type: "burst_scan",
+          severity: "medium",
+          productId: resolvedProductId!,
+          details: `${recentBurstScans.length} scans in 1 hour`,
+          timestamp: now,
+          resolved: false,
+        });
+      }
+
+      // ── Scan velocity detection (anti-tag-cloning at scale) ──
+      const totalScans = ((product.scanCount as number) || 0) + 1;
+      const daysSinceRegistration = Math.max(
+        1,
+        (Date.now() - new Date(product.createdAt as string).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const scansPerDay = totalScans / daysSinceRegistration;
+
+      if (totalScans > 20 && scansPerDay > 5) {
+        warnings.push(
+          `Abnormal scan velocity: ${totalScans} total scans (${scansPerDay.toFixed(1)}/day avg). ` +
+          `A single authentic product typically has fewer scans. This may indicate cloned tags.`
+        );
+        await createThreatAlert({
+          brandId: (resolvedBrandId || product.brandId) as string,
+          type: "scan_velocity",
+          severity: "high",
+          productId: resolvedProductId!,
+          details: `Scan velocity ${scansPerDay.toFixed(1)}/day over ${Math.round(daysSinceRegistration)} days (${totalScans} total). Possible tag cloning.`,
+          timestamp: now,
+          resolved: false,
+        });
+      }
     }
 
     if (!hashMatch) {
@@ -191,7 +220,6 @@ export async function GET(req: NextRequest) {
     } = { claimed: false, isClaimant: false };
 
     if (claim) {
-      // Product is claimed — check if this scanner is the original claimant
       const userAgent = req.headers.get("user-agent") || "unknown";
       const scannerFingerprint = sha256(`${ip}:${userAgent}`);
       const isOriginalClaimant = scannerFingerprint === claim.fingerprint;
@@ -203,7 +231,7 @@ export async function GET(req: NextRequest) {
         isClaimant: isOriginalClaimant,
       };
 
-      if (!isOriginalClaimant) {
+      if (!metadataOnly && !isOriginalClaimant) {
         warnings.push(
           "This product has been registered to another consumer. " +
           "If you purchased this product new, it may be a counterfeit with a cloned tag."
@@ -218,31 +246,6 @@ export async function GET(req: NextRequest) {
           resolved: false,
         });
       }
-    }
-
-    // ── Scan velocity detection (anti-tag-cloning at scale) ──
-    const totalScans = ((product.scanCount as number) || 0) + 1;
-    const daysSinceRegistration = Math.max(
-      1,
-      (Date.now() - new Date(product.createdAt as string).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const scansPerDay = totalScans / daysSinceRegistration;
-
-    // A legitimate single product shouldn't average more than 5 scans/day over its lifetime
-    if (totalScans > 20 && scansPerDay > 5) {
-      warnings.push(
-        `Abnormal scan velocity: ${totalScans} total scans (${scansPerDay.toFixed(1)}/day avg). ` +
-        `A single authentic product typically has fewer scans. This may indicate cloned tags.`
-      );
-      await createThreatAlert({
-        brandId: (resolvedBrandId || product.brandId) as string,
-        type: "scan_velocity",
-        severity: "high",
-        productId: resolvedProductId!,
-        details: `Scan velocity ${scansPerDay.toFixed(1)}/day over ${Math.round(daysSinceRegistration)} days (${totalScans} total). Possible tag cloning.`,
-        timestamp: now,
-        resolved: false,
-      });
     }
 
     const result: VerificationResult = {
