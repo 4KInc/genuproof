@@ -674,7 +674,7 @@ export default function Dashboard() {
                         : p.status === "recalled" ? "text-destructive bg-destructive/8 border-destructive/15"
                         : "text-accent bg-accent/8 border-accent/15";
                       return (
-                        <div key={p.productId} className={`py-4 px-5 ${idx > 0 ? "border-t border-border" : ""} hover:bg-secondary/30 transition-colors`}>
+                        <div key={p.productId} className={`py-4 px-5 ${idx > 0 ? "border-t border-border" : ""} hover:bg-secondary/30 transition-colors cursor-pointer`}>
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0">
                               <div className="flex items-center gap-2.5">

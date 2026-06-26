@@ -120,7 +120,7 @@ export default function ExplorePage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((p) => (
-              <div key={p.productId} className="border border-border bg-card rounded-lg p-6 group hover:border-primary/20 hover:shadow-sm transition-all">
+              <div key={p.productId} className="border border-border bg-card rounded-lg p-6 group hover:border-primary/20 hover:shadow-sm transition-all cursor-pointer">
                 <div className="flex items-start justify-between mb-3">
                   <div className="text-[10px] tracking-[0.1em] uppercase text-muted-foreground font-medium">
                     {p.brandName}

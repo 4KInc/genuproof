@@ -108,7 +108,7 @@ export default function StatusPage() {
         </div>
         <div className="border border-border rounded-lg overflow-hidden mb-8">
           {checks.map((check, i) => (
-            <div key={check.name} className={`flex items-center justify-between py-3.5 px-4 ${i > 0 ? "border-t border-border" : ""} hover:bg-secondary/20 transition-colors`}>
+            <div key={check.name} className={`flex items-center justify-between py-3.5 px-4 ${i > 0 ? "border-t border-border" : ""} hover:bg-secondary/20 transition-colors cursor-default`}>
               <div className="flex items-center gap-2.5">
                 <div className={`w-2 h-2 rounded-full ${
                   check.status === "checking" ? "bg-muted-foreground animate-pulse"

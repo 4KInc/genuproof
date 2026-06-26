@@ -203,6 +203,11 @@ body::before {
   animation: hash-scroll 20s linear infinite;
 }
 
+/* Pointer cursor on all interactive elements */
+button, a, [role="button"], select, input[type="checkbox"], input[type="radio"], summary {
+  cursor: pointer;
+}
+
 /* Custom selection */
 ::selection {
   background: rgba(13, 80, 60, 0.15);
