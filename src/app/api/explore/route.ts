@@ -35,8 +35,16 @@ export async function GET(req: NextRequest) {
       items = result.Items || [];
     }
 
+    // Deduplicate by productId (multiple PRODUCT_INDEX entries can exist for the same product)
+    const seen = new Set<string>();
     const products = items
       .filter((p) => (p.status || "active") === status)
+      .filter((p) => {
+        const id = p.productId as string;
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      })
       .slice(0, limit)
       .map((p) => ({
         productId: p.productId,

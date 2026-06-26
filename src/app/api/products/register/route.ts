@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { putItem, getItem, incrementCounter } from "@/lib/dynamodb";
+import { putItem, getItem, incrementCounter, queryGSI1 } from "@/lib/dynamodb";
 import {
   generateProductId,
   generateVerificationCode,
@@ -28,6 +28,21 @@ export async function POST(req: NextRequest) {
     const brand = await getItem(`BRAND#${brandId}`, "PROFILE");
     if (!brand) {
       return NextResponse.json({ error: "Brand not found" }, { status: 404 });
+    }
+
+    // Deduplication: check if a product with the same name (and SKU if provided) already exists for this brand
+    const existingProducts = await queryGSI1(`BRAND#${brandId}`, "PRODUCT#", { limit: 200 });
+    const duplicate = existingProducts.find((p) => {
+      if (p.name !== name) return false;
+      // If SKU is provided, both must match; if not, name match alone is a duplicate
+      if (sku && p.sku) return p.sku === sku;
+      return true;
+    });
+    if (duplicate) {
+      return NextResponse.json(
+        { error: `Product "${name}"${sku ? ` (SKU: ${sku})` : ""} already exists for this brand` },
+        { status: 409 }
+      );
     }
 
     const productId = generateProductId();

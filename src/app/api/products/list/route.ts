@@ -13,10 +13,19 @@ export async function GET(req: NextRequest) {
 
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "100");
 
-    const products = await queryGSI1(`BRAND#${brandId}`, "PRODUCT#", {
-      limit,
+    const items = await queryGSI1(`BRAND#${brandId}`, "PRODUCT#", {
+      limit: limit * 2,
       scanForward: false,
     });
+
+    // Deduplicate by productId
+    const seen = new Set<string>();
+    const products = items.filter((p) => {
+      const id = p.productId as string;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    }).slice(0, limit);
 
     return NextResponse.json({
       products: products.map((p) => ({
