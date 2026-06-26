@@ -99,13 +99,13 @@ export function ProvenanceTimeline({ events }: { events: ProvenanceEvent[] }) {
 
             {/* Expanded detail */}
             {isExpanded && (
-              <div className="ml-6 py-3 px-4 border-b border-border bg-secondary/20">
+              <div className="ml-6 py-3 px-4 border-b border-border bg-secondary/20 rounded-b-md">
                 <div className="grid gap-2.5">
                   <div>
                     <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-0.5">
                       Event Hash
                     </div>
-                    <div className="font-mono text-[10px] text-muted-foreground break-all">
+                    <div className="font-mono text-[10px] text-muted-foreground break-all bg-secondary/50 border border-border rounded-md px-2.5 py-1.5">
                       {event.hash}
                     </div>
                   </div>
@@ -113,13 +113,13 @@ export function ProvenanceTimeline({ events }: { events: ProvenanceEvent[] }) {
                     <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-0.5">
                       Previous Hash
                     </div>
-                    <div className="font-mono text-[10px] text-muted-foreground break-all">
+                    <div className="font-mono text-[10px] text-muted-foreground break-all bg-secondary/50 border border-border rounded-md px-2.5 py-1.5">
                       {event.previousHash || "Genesis block"}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 pt-1">
                     <div className={`w-1.5 h-1.5 rounded-full ${chainValid ? "bg-primary" : "bg-destructive"}`} />
-                    <span className={`text-[10px] ${chainValid ? "text-primary" : "text-destructive"}`}>
+                    <span className={`text-[10px] font-medium ${chainValid ? "text-primary" : "text-destructive"}`}>
                       {chainValid ? "Chain link intact" : "Chain link broken"}
                     </span>
                   </div>

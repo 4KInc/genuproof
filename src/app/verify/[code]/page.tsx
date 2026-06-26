@@ -68,6 +68,7 @@ function VerifyPageInner() {
   const [disputeLoading, setDisputeLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stage, setStage] = useState(0);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const timers = [
@@ -105,37 +106,42 @@ function VerifyPageInner() {
     ];
 
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-xs w-full">
-          <div className="mb-8">
-            <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
-              Verifying
-            </div>
-            <div className="font-mono text-[12px] text-muted-foreground/60 break-all">
-              {code}
-            </div>
-          </div>
-
-          <div className="space-y-0 border-t border-border">
-            {stages.map((s, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-3 py-2.5 border-b border-border transition-all duration-500 ${
-                  i <= stage ? "opacity-100" : "opacity-20"
-                }`}
-              >
-                <div className="w-4 flex justify-center shrink-0">
-                  {i < stage ? (
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  ) : i === stage ? (
-                    <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                  ) : (
-                    <div className="w-1 h-1 rounded-full bg-border" />
-                  )}
-                </div>
-                <span className="text-[12px] text-muted-foreground">{s}</span>
+      <div className="min-h-screen">
+        <SiteNav />
+        <div className="flex-1 flex items-center justify-center px-6 py-20">
+          <div className="max-w-xs w-full">
+            <div className="mb-8">
+              <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+                Verifying
               </div>
-            ))}
+              <div className="font-mono text-[12px] text-muted-foreground/60 break-all">
+                {code}
+              </div>
+            </div>
+
+            <div className="space-y-0 border border-border rounded-lg overflow-hidden">
+              {stages.map((s, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center gap-3 py-3 px-4 ${i > 0 ? "border-t border-border" : ""} transition-all duration-500 ${
+                    i <= stage ? "opacity-100" : "opacity-20"
+                  }`}
+                >
+                  <div className="w-4 flex justify-center shrink-0">
+                    {i < stage ? (
+                      <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                      </svg>
+                    ) : i === stage ? (
+                      <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                    ) : (
+                      <div className="w-1.5 h-1.5 rounded-full bg-border" />
+                    )}
+                  </div>
+                  <span className="text-[12px] text-muted-foreground">{s}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -144,21 +150,24 @@ function VerifyPageInner() {
 
   if (!result || result.error) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="max-w-md w-full">
-          <VerificationBadge
-            authentic={false}
-            brandName="Unknown"
-            productName="Unverified Product"
-            hash="N/A"
-          />
-          <p className="text-center text-[13px] text-muted-foreground mt-6">
-            {result?.error || "This verification code is not recognized."}
-          </p>
-          <div className="text-center mt-4">
-            <Link href="/" className="text-[12px] text-primary hover:underline">
-              Return to GenuProof
-            </Link>
+      <div className="min-h-screen">
+        <SiteNav />
+        <div className="flex items-center justify-center px-6 py-16">
+          <div className="max-w-md w-full">
+            <VerificationBadge
+              authentic={false}
+              brandName="Unknown"
+              productName="Unverified Product"
+              hash="N/A"
+            />
+            <p className="text-center text-[13px] text-muted-foreground mt-6">
+              {result?.error || "This verification code is not recognized."}
+            </p>
+            <div className="text-center mt-4">
+              <Link href="/" className="text-[12px] text-primary hover:text-primary/80 font-medium transition-colors">
+                Return to GenuProof
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -260,7 +269,7 @@ function VerifyPageInner() {
                             value={disputeForm.consumerName}
                             onChange={(e) => setDisputeForm({ ...disputeForm, consumerName: e.target.value })}
                             placeholder="e.g. Jane Smith"
-                            className="w-full px-3 py-2 text-[12px] bg-white border border-border focus:outline-none focus:border-primary/50"
+                            className="w-full px-3 py-2 text-[12px] bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                           />
                         </div>
                         <div>
@@ -270,7 +279,7 @@ function VerifyPageInner() {
                             value={disputeForm.orderNumber}
                             onChange={(e) => setDisputeForm({ ...disputeForm, orderNumber: e.target.value })}
                             placeholder="e.g. ORD-2026-12345"
-                            className="w-full px-3 py-2 text-[12px] bg-white border border-border focus:outline-none focus:border-primary/50 font-mono"
+                            className="w-full px-3 py-2 text-[12px] bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 font-mono"
                           />
                         </div>
                         <div>
@@ -280,7 +289,7 @@ function VerifyPageInner() {
                             onChange={(e) => setDisputeForm({ ...disputeForm, notes: e.target.value })}
                             placeholder="Where and when did you purchase this product?"
                             rows={2}
-                            className="w-full px-3 py-2 text-[12px] bg-white border border-border focus:outline-none focus:border-primary/50 resize-none"
+                            className="w-full px-3 py-2 text-[12px] bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 resize-none"
                           />
                         </div>
                         <div className="flex items-center gap-2">
@@ -449,32 +458,40 @@ function VerifyPageInner() {
 
         {/* Actions bar */}
         {product && (
-          <div className="mt-8 flex items-center gap-2 animate-reveal delay-4">
+          <div className="mt-8 flex items-center gap-2 flex-wrap animate-reveal delay-4">
             <button
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
-                alert("Verification URL copied to clipboard");
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
               }}
-              className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors cursor-pointer"
+              className="text-[11px] px-3.5 py-2 border border-border rounded-md hover:bg-secondary transition-all cursor-pointer flex items-center gap-1.5"
             >
-              Share result
+              {copied ? (
+                <>
+                  <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  </svg>
+                  <span className="text-primary">Copied!</span>
+                </>
+              ) : "Share result"}
             </button>
             <a
               href={`/api/products/certificate?code=${code}`}
               target="_blank"
-              className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+              className="text-[11px] px-3.5 py-2 border border-border rounded-md hover:bg-secondary transition-all"
             >
               Export JSON
             </a>
             <Link
               href={`/qr/${code}`}
-              className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+              className="text-[11px] px-3.5 py-2 border border-border rounded-md hover:bg-secondary transition-all"
             >
               QR Certificate
             </Link>
             <Link
               href={`/product/${product.productId}`}
-              className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+              className="text-[11px] px-3.5 py-2 border border-border rounded-md hover:bg-secondary transition-all"
             >
               Full details
             </Link>

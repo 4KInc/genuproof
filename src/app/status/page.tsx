@@ -38,13 +38,11 @@ export default function StatusPage() {
   ]);
 
   useEffect(() => {
-    // Fetch health
     fetch("/api/health")
       .then((r) => r.json())
       .then(setHealth)
       .catch(() => {});
 
-    // Run uptime checks
     checks.forEach((check, i) => {
       const start = performance.now();
       fetch(check.url, { method: "GET" })
@@ -67,7 +65,9 @@ export default function StatusPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const allUp = checks.every((c) => c.status === "up" || c.status === "checking");
+  const allChecked = checks.every((c) => c.status !== "checking");
+  const allUp = allChecked && checks.every((c) => c.status === "up");
+  const someDown = checks.some((c) => c.status === "down");
 
   return (
     <div className="min-h-screen">
@@ -80,10 +80,22 @@ export default function StatusPage() {
         </h1>
 
         {/* Overall status */}
-        <div className={`border p-5 mb-8 flex items-center gap-3 ${allUp ? "border-primary/20 bg-primary/3" : "border-destructive/20 bg-destructive/3"}`}>
-          <div className={`w-3 h-3 rounded-full ${allUp ? "bg-primary" : "bg-destructive"}`} />
-          <span className={`text-[14px] font-medium ${allUp ? "text-primary" : "text-destructive"}`}>
-            {allUp ? "All Systems Operational" : "Some Systems Degraded"}
+        <div className={`border rounded-lg p-5 mb-8 flex items-center gap-3 ${
+          !allChecked ? "border-border bg-secondary/30"
+            : allUp ? "border-primary/20 bg-primary/3"
+            : "border-destructive/20 bg-destructive/3"
+        }`}>
+          <div className={`w-3 h-3 rounded-full ${
+            !allChecked ? "bg-muted-foreground animate-pulse"
+              : allUp ? "bg-primary"
+              : "bg-destructive"
+          }`} />
+          <span className={`text-[14px] font-medium ${
+            !allChecked ? "text-muted-foreground"
+              : allUp ? "text-primary"
+              : "text-destructive"
+          }`}>
+            {!allChecked ? "Checking Systems..." : allUp ? "All Systems Operational" : someDown ? "Some Systems Degraded" : "All Systems Operational"}
           </span>
           <span className="text-[11px] text-muted-foreground ml-auto">
             {new Date().toLocaleString()}
@@ -91,14 +103,14 @@ export default function StatusPage() {
         </div>
 
         {/* Service checks */}
-        <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+        <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3 font-medium">
           Service Checks
         </div>
-        <div className="border-t border-border mb-8">
-          {checks.map((check) => (
-            <div key={check.name} className="flex items-center justify-between py-3 border-b border-border">
+        <div className="border border-border rounded-lg overflow-hidden mb-8">
+          {checks.map((check, i) => (
+            <div key={check.name} className={`flex items-center justify-between py-3.5 px-4 ${i > 0 ? "border-t border-border" : ""} hover:bg-secondary/20 transition-colors`}>
               <div className="flex items-center gap-2.5">
-                <div className={`w-1.5 h-1.5 rounded-full ${
+                <div className={`w-2 h-2 rounded-full ${
                   check.status === "checking" ? "bg-muted-foreground animate-pulse"
                     : check.status === "up" ? "bg-primary"
                     : "bg-destructive"
@@ -107,12 +119,12 @@ export default function StatusPage() {
               </div>
               <div className="flex items-center gap-3">
                 {check.latency > 0 && (
-                  <span className="text-[10px] font-mono text-muted-foreground/50">{check.latency}ms</span>
+                  <span className="text-[10px] font-mono text-muted-foreground/50 tabular-nums">{check.latency}ms</span>
                 )}
-                <span className={`text-[10px] font-medium tracking-wide uppercase ${
-                  check.status === "checking" ? "text-muted-foreground"
-                    : check.status === "up" ? "text-primary"
-                    : "text-destructive"
+                <span className={`text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full ${
+                  check.status === "checking" ? "text-muted-foreground bg-secondary"
+                    : check.status === "up" ? "text-primary bg-primary/8"
+                    : "text-destructive bg-destructive/8"
                 }`}>
                   {check.status === "checking" ? "Checking" : check.status === "up" ? "Operational" : "Down"}
                 </span>
@@ -124,29 +136,29 @@ export default function StatusPage() {
         {/* Infrastructure */}
         {health && (
           <>
-            <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+            <div className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-3 font-medium">
               Infrastructure
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
               {[
                 { label: "API", value: health.services.api, ok: health.services.api === "healthy" },
                 { label: "Database", value: health.services.database, ok: health.services.database === "healthy" },
                 { label: "DB Latency", value: health.services.dbLatency, ok: true },
                 { label: "Version", value: health.version, ok: true },
               ].map((s) => (
-                <div key={s.label} className="bg-background p-4">
+                <div key={s.label} className="bg-card border border-border rounded-lg p-4">
                   <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-0.5">{s.label}</div>
                   <div className={`text-[13px] font-medium ${s.ok ? "text-primary" : "text-destructive"}`}>{s.value}</div>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-2 gap-px bg-border">
-              <div className="bg-background p-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-card border border-border rounded-lg p-4">
                 <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-0.5">API Endpoints</div>
                 <div className="font-[family-name:var(--font-display)] text-2xl">{health.endpoints}</div>
               </div>
-              <div className="bg-background p-4">
+              <div className="bg-card border border-border rounded-lg p-4">
                 <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-0.5">Pages</div>
                 <div className="font-[family-name:var(--font-display)] text-2xl">{health.pages}</div>
               </div>

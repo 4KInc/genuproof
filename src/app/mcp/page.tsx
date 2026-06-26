@@ -111,7 +111,7 @@ const CONFIG_CLAUDE_DESKTOP = `// Claude Desktop — claude_desktop_config.json
       "command": "node",
       "args": ["/absolute/path/to/genuproof/mcp/server.mjs"],
       "env": {
-        "AUTHENTIK_BASE_URL": "https://genuproof.com"
+        "GENUPROOF_BASE_URL": "https://genuproof.com"
       }
     }
   }
@@ -277,7 +277,7 @@ export default function McpPage() {
             </div>
           </div>
           <p className="text-[12px] text-muted-foreground mt-3">
-            Set <code className="font-mono text-[11px] bg-secondary px-1 py-0.5 border border-border">AUTHENTIK_BASE_URL</code> to
+            Set <code className="font-mono text-[11px] bg-secondary px-1 py-0.5 border border-border">GENUPROOF_BASE_URL</code> to
             point to a different instance. Defaults to <code className="font-mono text-[11px] bg-secondary px-1 py-0.5 border border-border">https://genuproof.com</code>
           </p>
         </section>
@@ -312,7 +312,7 @@ export default function McpPage() {
             Tools Reference
           </h2>
           <p className="text-[13px] text-muted-foreground mb-6">
-            {TOTAL_TOOLS} tools across {TOOLS.length} categories. Each tool maps directly to an GenuProof API endpoint.
+            {TOTAL_TOOLS} tools across {TOOLS.length} categories. Each tool maps directly to a GenuProof API endpoint.
           </p>
 
           <div className="border-t border-border">
@@ -407,7 +407,7 @@ export default function McpPage() {
             </p>
             <p>
               No API keys required for read operations. The server connects to the live production instance by default.
-              Point <code className="font-mono text-[11px] bg-secondary px-1 py-0.5 border border-border">AUTHENTIK_BASE_URL</code> to
+              Point <code className="font-mono text-[11px] bg-secondary px-1 py-0.5 border border-border">GENUPROOF_BASE_URL</code> to
               a local dev server for development.
             </p>
           </div>
@@ -418,8 +418,8 @@ export default function McpPage() {
           <h2 className="font-[family-name:var(--font-display)] text-xl mb-4">Environment Variables</h2>
           <div className="border-t border-border">
             {[
-              { name: "AUTHENTIK_BASE_URL", desc: "Base URL of the GenuProof instance", default: "https://genuproof.com" },
-              { name: "BASE_URL", desc: "Fallback base URL (if AUTHENTIK_BASE_URL not set)", default: "https://genuproof.com" },
+              { name: "GENUPROOF_BASE_URL", desc: "Base URL of the GenuProof instance", default: "https://genuproof.com" },
+              { name: "BASE_URL", desc: "Fallback base URL (if GENUPROOF_BASE_URL not set)", default: "https://genuproof.com" },
             ].map((env) => (
               <div key={env.name} className="flex items-start gap-4 py-3 border-b border-border">
                 <code className="font-mono text-[11px] text-primary whitespace-nowrap mt-0.5">{env.name}</code>

@@ -171,7 +171,7 @@ export default function DocsPage() {
                   <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
                     Request Body
                   </div>
-                  <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border p-3 overflow-x-auto">
+                  <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-md p-3 overflow-x-auto">
                     {ep.body}
                   </pre>
                 </div>
@@ -181,7 +181,7 @@ export default function DocsPage() {
                 <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
                   Response
                 </div>
-                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border p-3 overflow-x-auto">
+                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-md p-3 overflow-x-auto">
                   {ep.response}
                 </pre>
               </div>

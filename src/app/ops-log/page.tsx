@@ -29,10 +29,10 @@ interface OpsStats {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-  CRITICAL: "text-red-700 bg-red-50 border-red-200",
-  HIGH: "text-orange-700 bg-orange-50 border-orange-200",
-  MEDIUM: "text-amber-700 bg-amber-50 border-amber-200",
-  LOW: "text-zinc-600 bg-zinc-50 border-zinc-200",
+  CRITICAL: "text-destructive bg-destructive/5 border-destructive/20",
+  HIGH: "text-destructive/80 bg-destructive/5 border-destructive/15",
+  MEDIUM: "text-warning bg-warning/5 border-warning/20",
+  LOW: "text-muted-foreground bg-secondary border-border",
 };
 
 export default function OpsLogPage() {
@@ -77,12 +77,55 @@ export default function OpsLogPage() {
         </div>
 
         {loading ? (
-          <div className="text-[12px] text-muted-foreground py-16 text-center">Loading AI operations...</div>
+          <div className="space-y-6">
+            {/* Stats skeleton */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-border rounded-lg overflow-hidden mb-10">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="bg-background p-5">
+                  <div className="h-2 w-16 bg-muted animate-pulse rounded mb-3" />
+                  <div className="h-5 w-20 bg-muted animate-pulse rounded" />
+                </div>
+              ))}
+            </div>
+            {/* Breakdown skeletons */}
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="border border-border bg-card rounded-lg p-5">
+                  <div className="h-2 w-16 bg-muted animate-pulse rounded mb-4" />
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <div key={j} className="flex justify-between py-1.5 border-b border-border last:border-0">
+                      <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+                      <div className="h-3 w-6 bg-muted animate-pulse rounded" />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+            {/* Table skeleton */}
+            <div className="border border-border rounded-lg overflow-hidden">
+              <div className="grid grid-cols-7 gap-px bg-border text-[8px]">
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <div key={i} className="bg-secondary/50 px-3 py-2">
+                    <div className="h-2 w-10 bg-muted animate-pulse rounded" />
+                  </div>
+                ))}
+              </div>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="grid grid-cols-7 gap-px bg-border">
+                  {Array.from({ length: 7 }).map((_, j) => (
+                    <div key={j} className="bg-background px-3 py-2.5">
+                      <div className="h-3 w-full bg-muted animate-pulse rounded" />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
           <>
             {/* Stats */}
             {stats && (
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-border mb-10">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-border rounded-lg overflow-hidden mb-10">
                 {[
                   { label: "Total AI Ops", value: String(stats.totalOperations) },
                   { label: "Gemini Model", value: stats.geminiModel || "—" },
@@ -102,7 +145,7 @@ export default function OpsLogPage() {
             {stats && (
               <div className="grid md:grid-cols-3 gap-6 mb-10">
                 {/* Agent breakdown */}
-                <div className="border border-border bg-card p-5">
+                <div className="border border-border bg-card rounded-lg p-5">
                   <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-3">By Agent</div>
                   {Object.entries(stats.agentBreakdown).map(([agent, count]) => (
                     <div key={agent} className="flex justify-between py-1.5 border-b border-border last:border-0">
@@ -116,7 +159,7 @@ export default function OpsLogPage() {
                 </div>
 
                 {/* Severity breakdown */}
-                <div className="border border-border bg-card p-5">
+                <div className="border border-border bg-card rounded-lg p-5">
                   <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-3">By AI Severity</div>
                   {Object.entries(stats.severityBreakdown).map(([sev, count]) => (
                     <div key={sev} className="flex justify-between py-1.5 border-b border-border last:border-0">
@@ -130,7 +173,7 @@ export default function OpsLogPage() {
                 </div>
 
                 {/* Attack vector breakdown */}
-                <div className="border border-border bg-card p-5">
+                <div className="border border-border bg-card rounded-lg p-5">
                   <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-3">By Attack Vector</div>
                   {Object.entries(stats.attackVectorBreakdown).map(([vec, count]) => (
                     <div key={vec} className="flex justify-between py-1.5 border-b border-border last:border-0">
@@ -157,7 +200,8 @@ export default function OpsLogPage() {
                 </p>
               </div>
             ) : (
-              <div className="border border-border">
+              <div className="overflow-x-auto rounded-lg border border-border">
+                <div className="min-w-[800px]">
                 {/* Header */}
                 <div className="grid grid-cols-7 gap-px bg-border text-[8px] tracking-[0.15em] uppercase text-muted-foreground">
                   <div className="bg-secondary/50 px-3 py-2">Timestamp</div>
@@ -194,6 +238,7 @@ export default function OpsLogPage() {
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
             )}
           </>

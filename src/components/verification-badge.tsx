@@ -12,7 +12,7 @@ export function VerificationBadge({
   hash: string;
 }) {
   return (
-    <div className="relative border border-border bg-card guilloche overflow-hidden">
+    <div className="relative border border-border bg-card guilloche overflow-hidden rounded-lg">
       {/* Top ornamental border */}
       <div className={`h-1 ${authentic ? "bg-primary" : "bg-destructive"}`} />
 
@@ -52,7 +52,7 @@ export function VerificationBadge({
               <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-1.5">
                 SHA-256 Fingerprint
               </div>
-              <div className="font-mono text-[10px] text-muted-foreground leading-relaxed break-all bg-secondary/50 border border-border px-3 py-2">
+              <div className="font-mono text-[10px] text-muted-foreground leading-relaxed break-all bg-secondary/50 border border-border rounded-md px-3 py-2">
                 {hash}
               </div>
             </div>
