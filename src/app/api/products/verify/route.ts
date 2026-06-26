@@ -5,16 +5,37 @@ import type { VerificationResult, ThreatAlert } from "@/lib/types";
 
 const SIGNING_SECRET = process.env.SIGNING_SECRET || "genuproof-dev-secret";
 
-// Simple GeoIP placeholder — in production, use MaxMind or ip-api
-async function geolocateIP(ip: string): Promise<{ country: string; city: string }> {
-  if (ip === "127.0.0.1" || ip === "::1") {
+// Geo lookup: prefer Vercel's built-in geo headers, fallback to ip-api
+function geoFromHeaders(req: NextRequest): { country: string; city: string } | null {
+  const country = req.headers.get("x-vercel-ip-country");
+  const city = req.headers.get("x-vercel-ip-city");
+  if (country && country !== "XX") {
+    return { country, city: city ? decodeURIComponent(city) : "Unknown" };
+  }
+  return null;
+}
+
+async function geolocateIP(ip: string, req: NextRequest): Promise<{ country: string; city: string }> {
+  // 1. Try Vercel geo headers first (free, instant, no external call)
+  const vercelGeo = geoFromHeaders(req);
+  if (vercelGeo) return vercelGeo;
+
+  // 2. Skip for local/unknown IPs
+  if (ip === "127.0.0.1" || ip === "::1" || ip === "unknown") {
     return { country: "Local", city: "Localhost" };
   }
+
+  // 3. Fallback to ip-api (HTTPS endpoint)
   try {
-    const res = await fetch(`http://ip-api.com/json/${ip}?fields=country,city`, {
+    const res = await fetch(`https://ipapi.co/${ip}/json/`, {
       signal: AbortSignal.timeout(2000),
     });
-    if (res.ok) return await res.json();
+    if (res.ok) {
+      const data = await res.json();
+      if (data.country_name && !data.error) {
+        return { country: data.country_name, city: data.city || "Unknown" };
+      }
+    }
   } catch {
     // Geo lookup is best-effort
   }
@@ -99,10 +120,10 @@ export async function GET(req: NextRequest) {
       "unknown";
 
     const warnings: string[] = [];
+    const geo = metadataOnly ? { country: "Unknown", city: "Unknown" } : await geolocateIP(ip, req);
 
     // Only record scans and run anomaly detection for real verifications (not metadata/OG fetches)
     if (!metadataOnly) {
-      const geo = await geolocateIP(ip);
 
       const scanRecord = {
         PK: `PRODUCT#${resolvedProductId}`,
@@ -158,6 +179,8 @@ export async function GET(req: NextRequest) {
           details: `Scanned from ${[...countries].join(", ")} in 24h window`,
           timestamp: now,
           resolved: false,
+          country: geo.country,
+          city: geo.city,
         });
       }
 
@@ -178,6 +201,8 @@ export async function GET(req: NextRequest) {
           details: `${recentBurstScans.length} scans in 1 hour`,
           timestamp: now,
           resolved: false,
+          country: geo.country,
+          city: geo.city,
         });
       }
 
@@ -202,6 +227,8 @@ export async function GET(req: NextRequest) {
           details: `Scan velocity ${scansPerDay.toFixed(1)}/day over ${Math.round(daysSinceRegistration)} days (${totalScans} total). Possible tag cloning.`,
           timestamp: now,
           resolved: false,
+          country: geo.country,
+          city: geo.city,
         });
       }
     }
@@ -244,6 +271,8 @@ export async function GET(req: NextRequest) {
           details: `Claimed product scanned by different device. Original claim: ${claim.claimedAt}. Possible cloned tag.`,
           timestamp: now,
           resolved: false,
+          country: geo.country,
+          city: geo.city,
         });
       }
     }
