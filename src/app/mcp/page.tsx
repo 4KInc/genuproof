@@ -188,22 +188,22 @@ export default function McpPage() {
 
         {/* Stats bar */}
         <div className="flex items-center gap-6 mb-10">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-secondary border border-border rounded-lg px-3 py-1.5">
             <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground">Tools</span>
             <span className="font-mono text-[13px] font-medium">{TOTAL_TOOLS}</span>
           </div>
           <div className="w-px h-3 bg-border" />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-secondary border border-border rounded-lg px-3 py-1.5">
             <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground">Categories</span>
             <span className="font-mono text-[13px] font-medium">{TOOLS.length}</span>
           </div>
           <div className="w-px h-3 bg-border" />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-secondary border border-border rounded-lg px-3 py-1.5">
             <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground">Transport</span>
             <span className="font-mono text-[13px] font-medium">stdio</span>
           </div>
           <div className="w-px h-3 bg-border" />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 bg-secondary border border-border rounded-lg px-3 py-1.5">
             <span className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground">Protocol</span>
             <span className="font-mono text-[13px] font-medium">JSON-RPC 2.0</span>
           </div>
@@ -214,21 +214,21 @@ export default function McpPage() {
           <h2 className="font-[family-name:var(--font-display)] text-xl mb-4">Quick Start</h2>
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <span className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+              <span className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-lg w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
               <div>
                 <p className="text-[13px] text-foreground mb-1">Clone the repository</p>
-                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border p-3">git clone https://github.com/4KInc/genuproof.git && cd genuproof && npm install</pre>
+                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-lg p-3">git clone https://github.com/4KInc/genuproof.git && cd genuproof && npm install</pre>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+              <span className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-lg w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
               <div>
                 <p className="text-[13px] text-foreground mb-1">Test the server</p>
-                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border p-3">npm run mcp</pre>
+                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-lg p-3">npm run mcp</pre>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+              <span className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-lg w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
               <div>
                 <p className="text-[13px] text-foreground mb-1">Add the configuration below to your AI client</p>
               </div>
@@ -239,9 +239,9 @@ export default function McpPage() {
         {/* Configuration */}
         <section className="mb-12">
           <h2 className="font-[family-name:var(--font-display)] text-xl mb-4">Configuration</h2>
-          <div className="border border-border">
+          <div className="border border-border rounded-lg overflow-hidden">
             {/* Tabs */}
-            <div className="flex border-b border-border">
+            <div className="flex gap-2 p-2 border-b border-border">
               {(
                 [
                   { id: "claude-code" as ConfigTab, label: "Claude Code" },
@@ -253,9 +253,9 @@ export default function McpPage() {
                 <button
                   key={tab.id}
                   onClick={() => setConfigTab(tab.id)}
-                  className={`px-4 py-2.5 text-[12px] tracking-wide transition-colors ${
+                  className={`px-3 py-1.5 text-[12px] tracking-wide transition-colors rounded-full ${
                     configTab === tab.id
-                      ? "bg-secondary text-foreground font-medium"
+                      ? "bg-secondary text-foreground font-medium border border-border"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -270,7 +270,7 @@ export default function McpPage() {
               </pre>
               <button
                 onClick={() => handleCopy(configMap[configTab])}
-                className="absolute top-3 right-3 text-[10px] tracking-[0.1em] uppercase text-muted-foreground hover:text-foreground bg-secondary border border-border px-2 py-1 transition-colors"
+                className="absolute top-3 right-3 text-[10px] tracking-[0.1em] uppercase text-muted-foreground hover:text-foreground bg-secondary border border-border rounded-md px-2 py-1 transition-colors"
               >
                 {copied ? "Copied" : "Copy"}
               </button>
@@ -296,9 +296,9 @@ export default function McpPage() {
               { q: "Register 20 products in my handbag collection", tool: "products_batch" },
               { q: "Set up a FedEx webhook integration for my brand", tool: "integrations_configure" },
             ].map((ex) => (
-              <div key={ex.q} className="border border-border p-3">
+              <div key={ex.q} className="border border-border rounded-lg p-3">
                 <p className="text-[13px] text-foreground leading-snug mb-1.5">&ldquo;{ex.q}&rdquo;</p>
-                <span className="font-mono text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 border border-border">
+                <span className="font-mono text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 border border-border rounded-md">
                   {ex.tool}
                 </span>
               </div>
@@ -323,16 +323,18 @@ export default function McpPage() {
                   onClick={() =>
                     setExpandedCategory(expandedCategory === cat.category ? null : cat.category)
                   }
-                  className="w-full flex items-center justify-between py-4 px-1 text-left group"
+                  className={`w-full flex items-center justify-between py-3 px-3 text-left group rounded-lg transition-colors ${
+                    expandedCategory === cat.category ? "bg-secondary" : "hover:bg-secondary/50"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <h3 className="text-[14px] font-medium">{cat.category}</h3>
-                    <span className="font-mono text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 border border-border">
+                    <span className="font-mono text-[10px] text-muted-foreground bg-secondary px-1.5 py-0.5 border border-border rounded-md">
                       {cat.tools.length}
                     </span>
                   </div>
                   <svg
-                    className={`w-4 h-4 text-muted-foreground transition-transform ${
+                    className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
                       expandedCategory === cat.category ? "rotate-180" : ""
                     }`}
                     fill="none"
@@ -347,6 +349,7 @@ export default function McpPage() {
                 {/* Tools list */}
                 {expandedCategory === cat.category && (
                   <div className="pb-4">
+                    <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground">
@@ -375,6 +378,7 @@ export default function McpPage() {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 )}
               </div>
@@ -385,7 +389,7 @@ export default function McpPage() {
         {/* Architecture */}
         <section className="mb-12">
           <h2 className="font-[family-name:var(--font-display)] text-xl mb-4">How It Works</h2>
-          <div className="border border-border p-5">
+          <div className="border border-border rounded-lg p-5">
             <pre className="font-mono text-[11px] text-muted-foreground leading-relaxed whitespace-pre overflow-x-auto">{`AI Assistant (Claude, Cursor, custom)
         |
         | JSON-RPC 2.0 over stdio
@@ -416,12 +420,12 @@ export default function McpPage() {
         {/* Environment Variables */}
         <section className="mb-12">
           <h2 className="font-[family-name:var(--font-display)] text-xl mb-4">Environment Variables</h2>
-          <div className="border-t border-border">
+          <div className="border border-border rounded-lg overflow-hidden">
             {[
               { name: "GENUPROOF_BASE_URL", desc: "Base URL of the GenuProof instance", default: "https://genuproof.com" },
               { name: "BASE_URL", desc: "Fallback base URL (if GENUPROOF_BASE_URL not set)", default: "https://genuproof.com" },
             ].map((env) => (
-              <div key={env.name} className="flex items-start gap-4 py-3 border-b border-border">
+              <div key={env.name} className="flex items-start gap-4 py-3 px-4 border-b border-border last:border-b-0">
                 <code className="font-mono text-[11px] text-primary whitespace-nowrap mt-0.5">{env.name}</code>
                 <div>
                   <p className="text-[12px] text-muted-foreground">{env.desc}</p>

@@ -122,34 +122,45 @@ export default function IntegrationsPage() {
         </p>
 
         {/* Architecture diagram */}
-        <div className="border border-border bg-card p-6 mb-10">
-          <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-4">How It Works</div>
-          <div className="font-mono text-[11px] text-muted-foreground leading-relaxed space-y-1">
-            <div>Carrier/POS/WMS fires webhook on status change</div>
-            <div className="text-primary">  |</div>
-            <div>  POST /api/ingest/&#123;shipping|pos|warehouse&#125;</div>
-            <div className="text-primary">  |</div>
-            <div>  GenuProof maps carrier status to event type</div>
-            <div className="text-primary">  |</div>
-            <div>  Fetches last event hash for this product</div>
-            <div className="text-primary">  |</div>
-            <div>  new_hash = SHA-256(event_data + previous_hash)</div>
-            <div className="text-primary">  |</div>
-            <div>  Writes hash-chained EVENT# to DynamoDB</div>
-            <div className="text-primary">  |</div>
-            <div>  DynamoDB Stream fires (for anomaly detection)</div>
-            <div className="text-primary">  |</div>
-            <div>  Consumer sees full journey on verification page</div>
+        <div className="border border-border bg-card p-6 mb-10 rounded-lg">
+          <div className="text-[10px] font-medium tracking-[0.2em] uppercase text-muted-foreground mb-5">How It Works</div>
+          <div className="space-y-0">
+            {[
+              { text: "Carrier/POS/WMS fires webhook on status change", accent: false },
+              { text: "POST /api/ingest/{shipping|pos|warehouse}", accent: false },
+              { text: "GenuProof maps carrier status to event type", accent: false },
+              { text: "Fetches last event hash for this product", accent: false },
+              { text: "new_hash = SHA-256(event_data + previous_hash)", accent: true },
+              { text: "Writes hash-chained EVENT# to DynamoDB", accent: false },
+              { text: "DynamoDB Stream fires (for anomaly detection)", accent: false },
+              { text: "Consumer sees full journey on verification page", accent: false },
+            ].map((step, i, arr) => (
+              <div key={i} className="flex gap-0">
+                <div className="flex flex-col items-center w-8 shrink-0">
+                  <div className={`w-2 h-2 rounded-full mt-3 shrink-0 ${step.accent ? "bg-primary" : "bg-primary/40"}`} />
+                  {i < arr.length - 1 && (
+                    <div className="w-px flex-1 bg-primary/20 mt-1" />
+                  )}
+                </div>
+                <div className={`font-mono text-[11px] leading-relaxed py-2.5 pl-1 border-l-2 ml-0 pl-3 mb-1 ${
+                  step.accent
+                    ? "border-primary text-primary bg-primary/3 px-3 rounded-r-md"
+                    : "border-transparent text-muted-foreground"
+                }`}>
+                  {step.text}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Integration tabs */}
-        <div className="flex items-center gap-1 mb-8">
+        <div className="flex items-center gap-2 mb-8">
           {INTEGRATIONS.map((intg, i) => (
             <button
               key={intg.name}
               onClick={() => { setActiveIdx(i); setTestResult(null); }}
-              className={`text-[11px] px-4 py-2 tracking-wide transition-colors cursor-pointer ${
+              className={`text-[11px] px-4 py-2 tracking-wide transition-colors cursor-pointer rounded-full ${
                 activeIdx === i
                   ? "bg-primary text-primary-foreground"
                   : "border border-border hover:bg-secondary"
@@ -163,24 +174,24 @@ export default function IntegrationsPage() {
         {/* Active integration */}
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <div className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+            <div className="text-[10px] font-medium tracking-[0.2em] uppercase text-muted-foreground mb-3">
               {active.name}
             </div>
-            <code className="font-mono text-[12px] text-accent bg-accent/5 px-2 py-1 border border-accent/10 inline-block mb-4">
+            <code className="font-mono text-[12px] text-accent bg-accent/5 px-2 py-1 border border-accent/10 inline-block mb-4 rounded-md">
               {active.endpoint}
             </code>
             <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">{active.description}</p>
 
-            <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-2">
+            <div className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">
               Supported Platforms
             </div>
             <div className="flex flex-wrap gap-1.5 mb-6">
               {active.carriers.map((c) => (
-                <span key={c} className="text-[10px] px-2 py-1 border border-border">{c}</span>
+                <span key={c} className="text-[10px] px-2 py-1 border border-border rounded-md">{c}</span>
               ))}
             </div>
 
-            <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-2">
+            <div className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">
               Status Mapping
             </div>
             <div className="space-y-1 mb-6">
@@ -195,26 +206,32 @@ export default function IntegrationsPage() {
             <button
               onClick={runTest}
               disabled={testing}
-              className="text-[11px] px-4 py-2 bg-primary text-primary-foreground font-medium tracking-wide hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-2 text-[11px] px-4 py-2 bg-primary text-primary-foreground font-medium tracking-wide hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer rounded-md"
             >
+              {testing && (
+                <svg className="animate-spin h-3 w-3 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              )}
               {testing ? "Sending..." : "Send Test Event"}
             </button>
           </div>
 
           <div>
-            <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-2">
+            <div className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">
               Example Payload
             </div>
-            <pre className="font-mono text-[10px] text-muted-foreground bg-secondary border border-border p-4 overflow-x-auto mb-4 leading-relaxed">
+            <pre className="font-mono text-[10px] text-muted-foreground bg-secondary border border-border p-4 overflow-x-auto mb-4 leading-relaxed rounded-md">
               {JSON.stringify(active.example, null, 2)}
             </pre>
 
             {testResult && (
               <div>
-                <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-2">
+                <div className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">
                   Response
                 </div>
-                <pre className="font-mono text-[10px] text-primary bg-primary/5 border border-primary/20 p-4 overflow-x-auto leading-relaxed">
+                <pre className="font-mono text-[10px] text-primary bg-primary/5 border border-primary/20 p-4 overflow-x-auto leading-relaxed rounded-lg">
                   {testResult}
                 </pre>
               </div>
@@ -298,12 +315,12 @@ function SimulationPanel() {
     <div className="grid md:grid-cols-2 gap-8">
       <div className="space-y-4">
         <div>
-          <label className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Brand</label>
+          <label className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Brand</label>
           <select
             value={brandId}
             onChange={(e) => setBrandId(e.target.value)}
             onFocus={loadBrands}
-            className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:border-primary/50 cursor-pointer"
+            className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all cursor-pointer rounded-md"
           >
             <option value="">Select brand</option>
             {brands.map((b) => (
@@ -312,11 +329,11 @@ function SimulationPanel() {
           </select>
         </div>
         <div>
-          <label className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Product Name</label>
+          <label className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Product Name</label>
           <select
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
-            className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:border-primary/50 cursor-pointer"
+            className="w-full px-3 py-2.5 text-[13px] bg-card border border-border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all cursor-pointer rounded-md"
           >
             <option value="">Select product</option>
             <optgroup label="Watches">
@@ -352,12 +369,12 @@ function SimulationPanel() {
           </select>
         </div>
         <div>
-          <label className="text-[10px] tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Journey Template</label>
+          <label className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-1.5 block">Journey Template</label>
           <div className="space-y-2">
             {JOURNEYS.map((j) => (
               <label
                 key={j.value}
-                className={`flex items-start gap-3 p-3 border cursor-pointer transition-colors ${
+                className={`flex items-start gap-3 p-3 border cursor-pointer transition-colors rounded-lg ${
                   journey === j.value ? "border-primary/30 bg-primary/3" : "border-border hover:bg-secondary/30"
                 }`}
               >
@@ -380,8 +397,14 @@ function SimulationPanel() {
         <button
           onClick={runSimulation}
           disabled={simulating || !brandId || !productName}
-          className="w-full py-2.5 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors disabled:opacity-40 cursor-pointer"
+          className="w-full py-2.5 inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors disabled:opacity-40 cursor-pointer rounded-md"
         >
+          {simulating && (
+            <svg className="animate-spin h-3.5 w-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          )}
           {simulating ? "Simulating supply chain..." : "Run Simulation"}
         </button>
       </div>
@@ -391,7 +414,7 @@ function SimulationPanel() {
           <div>
             {simResult.success ? (
               <div>
-                <div className="border border-primary/20 bg-primary/3 p-4 mb-4">
+                <div className="border border-primary/20 bg-primary/3 p-4 mb-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                     <span className="text-[11px] font-medium tracking-wide uppercase text-primary">Simulation Complete</span>
@@ -401,13 +424,13 @@ function SimulationPanel() {
                   </p>
                 </div>
 
-                <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-2">Product</div>
-                <div className="border border-border p-3 mb-4 space-y-1">
+                <div className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">Product</div>
+                <div className="border border-border p-3 mb-4 space-y-1 rounded-lg">
                   <div className="text-[13px] font-medium">{String((simResult.product as Record<string, unknown>)?.name)}</div>
                   <div className="text-[10px] font-mono text-muted-foreground">Code: {String((simResult.product as Record<string, unknown>)?.verificationCode)}</div>
                 </div>
 
-                <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-2">Journey ({String((simResult.journey as Record<string, unknown>)?.totalSteps)} events)</div>
+                <div className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">Journey ({String((simResult.journey as Record<string, unknown>)?.totalSteps)} events)</div>
                 <div className="border-t border-border max-h-48 overflow-y-auto">
                   {((simResult.journey as Record<string, unknown>)?.events as Array<Record<string, string>>)?.map((e, i) => (
                     <div key={i} className="flex items-start gap-2 py-2 border-b border-border">
@@ -425,34 +448,34 @@ function SimulationPanel() {
                   <a
                     href={(simResult.urls as Record<string, string>)?.verify}
                     target="_blank"
-                    className="text-[10px] px-3 py-1.5 bg-primary text-primary-foreground tracking-wide hover:bg-primary/90 transition-colors"
+                    className="text-[10px] px-3 py-1.5 bg-primary text-primary-foreground tracking-wide hover:bg-primary/90 transition-colors rounded-md"
                   >
                     Verify Product
                   </a>
                   <a
                     href={(simResult.urls as Record<string, string>)?.qr}
                     target="_blank"
-                    className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+                    className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors rounded-md"
                   >
                     QR Certificate
                   </a>
                   <a
                     href={(simResult.urls as Record<string, string>)?.product}
                     target="_blank"
-                    className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors"
+                    className="text-[10px] px-3 py-1.5 border border-border hover:bg-secondary transition-colors rounded-md"
                   >
                     Product Detail
                   </a>
                 </div>
               </div>
             ) : (
-              <pre className="font-mono text-[10px] text-destructive bg-destructive/5 border border-destructive/20 p-4 overflow-x-auto">
+              <pre className="font-mono text-[10px] text-destructive bg-destructive/5 border border-destructive/20 p-4 overflow-x-auto rounded-lg">
                 {JSON.stringify(simResult, null, 2)}
               </pre>
             )}
           </div>
         ) : (
-          <div className="border border-dashed border-border py-16 text-center">
+          <div className="border border-dashed border-border py-16 text-center rounded-lg">
             <p className="text-[12px] text-muted-foreground/50">
               Select a brand, name your product, choose a journey, and hit simulate.
               A fully hash-chained supply chain will be created in seconds.

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { SiteNav } from "@/components/site-nav";
 
@@ -132,12 +133,40 @@ const ENDPOINTS = [
   },
 ];
 
+function ClipboardIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg>
+  );
+}
+
 export default function DocsPage() {
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+
+  function handleCopy(text: string, idx: number) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 2000);
+    });
+  }
+
   return (
     <div className="min-h-screen">
       <SiteNav />
 
-      <div className="max-w-[900px] mx-auto px-6 md:px-10 py-12">
+      <div className="max-w-[960px] mx-auto px-6 md:px-10 py-12">
         <p className="text-[13px] text-muted-foreground tracking-wide uppercase mb-4">
           Documentation
         </p>
@@ -146,69 +175,114 @@ export default function DocsPage() {
         </h1>
         <p className="text-[13px] text-muted-foreground leading-relaxed mb-10 max-w-lg">
           RESTful API for product registration, verification, provenance tracking,
-          and threat intelligence. All responses are JSON. Base URL: <code className="font-mono text-[12px] bg-secondary px-1.5 py-0.5 border border-border">https://genuproof.com</code>
+          and threat intelligence. All responses are JSON. Base URL:{" "}
+          <code className="font-mono text-[12px] bg-secondary px-1.5 py-0.5 border border-border rounded-md">
+            https://genuproof.com
+          </code>
         </p>
 
-        <div className="space-y-0 border-t border-border">
-          {ENDPOINTS.map((ep) => (
-            <div key={ep.path + ep.method} className="py-6 border-b border-border">
-              <div className="flex items-center gap-3 mb-2">
-                <span
-                  className={`text-[10px] font-mono font-medium tracking-wide px-2 py-0.5 ${
-                    ep.method === "GET"
-                      ? "bg-primary/10 text-primary"
-                      : "bg-accent/10 text-accent"
-                  }`}
+        <div className="grid md:grid-cols-[200px,1fr] gap-8">
+          {/* Sticky sidebar */}
+          <aside className="hidden md:block">
+            <nav className="sticky top-8 space-y-1">
+              <p className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-3">
+                On this page
+              </p>
+              <a
+                href="#endpoints"
+                className="block text-[12px] text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                Endpoints
+              </a>
+              <a
+                href="#cryptographic-design"
+                className="block text-[12px] text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                Cryptographic Design
+              </a>
+            </nav>
+          </aside>
+
+          {/* Main content */}
+          <div>
+            <div id="endpoints" className="space-y-3">
+              {ENDPOINTS.map((ep, idx) => (
+                <div
+                  key={ep.path + ep.method}
+                  className="rounded-lg border border-border p-5 hover:border-primary/10 transition-all"
                 >
-                  {ep.method}
-                </span>
-                <code className="font-mono text-[13px] text-foreground">{ep.path}</code>
-              </div>
-              <p className="text-[13px] text-muted-foreground mb-3">{ep.desc}</p>
-
-              {ep.body && (
-                <div className="mb-2">
-                  <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
-                    Request Body
+                  <div className="flex items-center gap-3 mb-2">
+                    <span
+                      className={`text-[10px] font-mono font-medium tracking-wide px-2 py-0.5 rounded-md ${
+                        ep.method === "GET"
+                          ? "bg-primary/10 text-primary"
+                          : "bg-accent/10 text-accent"
+                      }`}
+                    >
+                      {ep.method}
+                    </span>
+                    <code className="font-mono text-[13px] text-foreground">{ep.path}</code>
                   </div>
-                  <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-md p-3 overflow-x-auto">
-                    {ep.body}
-                  </pre>
-                </div>
-              )}
+                  <p className="text-[13px] text-muted-foreground mb-3">{ep.desc}</p>
 
-              <div>
-                <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
-                  Response
+                  {ep.body && (
+                    <div className="mb-2">
+                      <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
+                        Request Body
+                      </div>
+                      <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-md p-3 overflow-x-auto">
+                        {ep.body}
+                      </pre>
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1">
+                      Response
+                    </div>
+                    <div className="relative">
+                      <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-md p-3 overflow-x-auto pr-16">
+                        {ep.response}
+                      </pre>
+                      <button
+                        onClick={() => handleCopy(ep.response, idx)}
+                        className="absolute top-2 right-2 flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground bg-secondary border border-border rounded px-1.5 py-1 transition-colors"
+                        aria-label="Copy response"
+                      >
+                        {copiedIdx === idx ? (
+                          <span>Copied!</span>
+                        ) : (
+                          <ClipboardIcon />
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <pre className="font-mono text-[11px] text-muted-foreground bg-secondary border border-border rounded-md p-3 overflow-x-auto">
-                  {ep.response}
-                </pre>
+              ))}
+            </div>
+
+            <div id="cryptographic-design" className="mt-10 pt-6 border-t border-border">
+              <h2 className="font-[family-name:var(--font-display)] text-xl mb-3">
+                Cryptographic Design
+              </h2>
+              <div className="space-y-3 text-[13px] text-muted-foreground leading-relaxed">
+                <p>
+                  <strong className="text-foreground">Product Hash:</strong> Each product record is canonicalized
+                  to JSON and hashed with SHA-256. The hash is then signed with HMAC-SHA256 using a server-side
+                  secret. Verification recomputes the hash and checks both the hash match and the HMAC signature.
+                </p>
+                <p>
+                  <strong className="text-foreground">Provenance Chain:</strong> Each supply chain event includes
+                  the hash of the previous event. The chain starts with a genesis event whose previousHash is
+                  SHA-256 of an empty string. Tampering with any event breaks all subsequent hash links.
+                </p>
+                <p>
+                  <strong className="text-foreground">Anomaly Detection:</strong> Every verification scan records
+                  the requester&apos;s IP and geolocation. The system checks for geographic anomalies (same product
+                  scanned from 3+ countries in 24 hours) and burst patterns (10+ scans per hour).
+                </p>
               </div>
             </div>
-          ))}
-        </div>
-
-        <div className="mt-12 pt-6 border-t border-border">
-          <h2 className="font-[family-name:var(--font-display)] text-xl mb-3">
-            Cryptographic Design
-          </h2>
-          <div className="space-y-3 text-[13px] text-muted-foreground leading-relaxed">
-            <p>
-              <strong className="text-foreground">Product Hash:</strong> Each product record is canonicalized
-              to JSON and hashed with SHA-256. The hash is then signed with HMAC-SHA256 using a server-side
-              secret. Verification recomputes the hash and checks both the hash match and the HMAC signature.
-            </p>
-            <p>
-              <strong className="text-foreground">Provenance Chain:</strong> Each supply chain event includes
-              the hash of the previous event. The chain starts with a genesis event whose previousHash is
-              SHA-256 of an empty string. Tampering with any event breaks all subsequent hash links.
-            </p>
-            <p>
-              <strong className="text-foreground">Anomaly Detection:</strong> Every verification scan records
-              the requester&apos;s IP and geolocation. The system checks for geographic anomalies (same product
-              scanned from 3+ countries in 24 hours) and burst patterns (10+ scans per hour).
-            </p>
           </div>
         </div>
       </div>

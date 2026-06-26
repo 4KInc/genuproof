@@ -334,7 +334,7 @@ function VerifyPageInner() {
                 </p>
               </div>
             ) : (
-              <div className="border border-border p-4">
+              <div className="border border-border rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-[11px] font-medium mb-0.5">Register this purchase</div>
@@ -430,7 +430,7 @@ function VerifyPageInner() {
                   <div className="text-[9px] tracking-[0.15em] uppercase text-muted-foreground mb-1.5">
                     SHA-256 Fingerprint
                   </div>
-                  <div className="font-mono text-[9px] text-muted-foreground/60 break-all leading-relaxed bg-secondary/50 border border-border px-2.5 py-2">
+                  <div className="font-mono text-[9px] text-muted-foreground/60 break-all leading-relaxed bg-secondary/50 border border-border rounded-md px-2.5 py-2">
                     {certificate.hash}
                   </div>
                 </div>
@@ -450,7 +450,7 @@ function VerifyPageInner() {
                 {events.length} events
               </div>
             </div>
-            <div className="border border-border bg-card p-4 md:p-6">
+            <div className="border border-border bg-card rounded-lg p-4 md:p-6">
               <ProvenanceTimeline events={events} />
             </div>
           </div>

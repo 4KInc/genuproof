@@ -2,103 +2,18 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteNav } from "@/components/site-nav";
 
 export default function Home() {
   const [verifyCode, setVerifyCode] = useState("");
-  const [mobileNav, setMobileNav] = useState(false);
 
   return (
     <div className="flex flex-col min-h-screen">
       {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 bg-background/90 backdrop-blur-sm">
-        <div className="max-w-[1200px] mx-auto px-6 md:px-10">
-          <div className="flex items-center justify-between h-14 border-b border-border">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-6 h-6 border-2 border-primary rounded-sm flex items-center justify-center">
-                <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                </svg>
-              </div>
-              <span className="text-sm font-medium tracking-wide uppercase">GenuProof</span>
-            </Link>
-            <div className="flex items-center gap-6">
-              <Link href="/explore" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                Explore
-              </Link>
-              <Link href="/verify" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                Verify
-              </Link>
-              <Link href="/dashboard" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                Dashboard
-              </Link>
-              <Link href="/docs" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                API
-              </Link>
-              <Link href="/pricing" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                Pricing
-              </Link>
-              <Link href="/integrations" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                Integrations
-              </Link>
-              <Link href="/mcp" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                MCP
-              </Link>
-              <ThemeToggle />
-              <Link
-                href="/dashboard"
-                className="text-[13px] px-4 py-1.5 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors hidden sm:inline-flex"
-              >
-                Get Started
-              </Link>
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setMobileNav(!mobileNav)}
-                className="sm:hidden p-1 cursor-pointer"
-              >
-                <svg className="w-5 h-5 text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  {mobileNav ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
-                  )}
-                </svg>
-              </button>
-            </div>
-          </div>
-          {/* Mobile nav dropdown */}
-          {mobileNav && (
-            <div className="sm:hidden border-t border-border py-3 space-y-1">
-              {[
-                { href: "/explore", label: "Explore" },
-                { href: "/verify", label: "Verify" },
-                { href: "/dashboard", label: "Dashboard" },
-                { href: "/docs", label: "API" },
-                { href: "/mcp", label: "MCP" },
-              ].map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block px-2 py-2 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setMobileNav(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                href="/dashboard"
-                className="block px-2 py-2 text-[13px] text-primary font-medium"
-                onClick={() => setMobileNav(false)}
-              >
-                Get Started
-              </Link>
-            </div>
-          )}
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* Hero */}
-      <section className="pt-28 pb-16 px-6 md:px-10">
+      <section className="pt-24 pb-16 px-6 md:px-10">
         <div className="max-w-[1200px] mx-auto">
           <div className="grid md:grid-cols-[1fr,380px] gap-12 md:gap-20 items-start">
             <div>
@@ -122,14 +37,14 @@ export default function Home() {
               <div className="mt-10 flex flex-col sm:flex-row items-start gap-3 animate-reveal delay-3">
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors rounded-md"
                 >
                   Register your brand
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                   </svg>
                 </Link>
-                <div className="flex items-center border border-border bg-card">
+                <div className="flex items-center border border-border bg-card focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all rounded-md overflow-hidden">
                   <input
                     type="text"
                     placeholder="Verification code"
@@ -155,7 +70,7 @@ export default function Home() {
             {/* Certificate preview card */}
             <div className="animate-reveal delay-4 hidden md:block">
               <div className="relative">
-                <div className="border border-border bg-card p-6 guilloche">
+                <div className="border border-border bg-card p-6 guilloche rounded-lg">
                   {/* Certificate header */}
                   <div className="flex items-center justify-between mb-6">
                     <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
@@ -225,7 +140,7 @@ export default function Home() {
       {/* Bento Stats + Features */}
       <section className="py-20 px-6 md:px-10">
         <div className="max-w-[1200px] mx-auto">
-          <div className="grid md:grid-cols-4 gap-px bg-border">
+          <div className="grid md:grid-cols-4 gap-3">
             {[
               { value: "$2T+", label: "Global counterfeit market", sub: "annually" },
               { value: "<10ms", label: "Verification latency", sub: "DynamoDB" },
@@ -234,7 +149,7 @@ export default function Home() {
             ].map((stat, i) => (
               <div
                 key={stat.label}
-                className={`bg-background p-8 animate-reveal delay-${i + 1}`}
+                className={`bg-card border border-border rounded-lg p-8 animate-reveal delay-${i + 1}`}
               >
                 <div className="font-[family-name:var(--font-display)] text-3xl md:text-4xl tracking-tight">
                   {stat.value}
@@ -308,7 +223,7 @@ export default function Home() {
             From registration to<br />verification in <em className="text-accent">seconds.</em>
           </h2>
 
-          <div className="grid md:grid-cols-3 gap-px bg-border">
+          <div className="grid md:grid-cols-3 gap-4">
             {[
               {
                 step: "Register",
@@ -326,9 +241,9 @@ export default function Home() {
                 detail: "GET /api/threats",
               },
             ].map((item, i) => (
-              <div key={item.step} className="bg-background p-8">
+              <div key={item.step} className="bg-card border border-border rounded-lg p-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <span className="w-7 h-7 border border-border flex items-center justify-center font-mono text-[11px] text-muted-foreground">
+                  <span className="w-7 h-7 border border-border rounded-md flex items-center justify-center font-mono text-[11px] text-muted-foreground">
                     {i + 1}
                   </span>
                   <span className="font-[family-name:var(--font-display)] text-xl">{item.step}</span>
@@ -336,7 +251,7 @@ export default function Home() {
                 <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
                   {item.desc}
                 </p>
-                <code className="font-mono text-[10px] text-accent/70 bg-accent/5 px-2 py-1 border border-accent/10">
+                <code className="font-mono text-[10px] text-accent/70 bg-accent/5 px-2 py-1 border border-accent/10 rounded-md">
                   {item.detail}
                 </code>
               </div>
@@ -358,7 +273,7 @@ export default function Home() {
             </p>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground text-[13px] font-medium tracking-wide hover:bg-primary/90 transition-colors rounded-md"
             >
               Start protecting your brand
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -373,7 +288,7 @@ export default function Home() {
       <footer className="py-6 px-6 md:px-10 border-t border-border">
         <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-            <div className="w-4 h-4 border border-primary/40 rounded-sm flex items-center justify-center">
+            <div className="w-4 h-4 border border-primary/40 rounded-md flex items-center justify-center">
               <svg className="w-2.5 h-2.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
               </svg>
@@ -385,6 +300,8 @@ export default function Home() {
             <Link href="/compare" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">Compare</Link>
             <Link href="/analytics" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">Analytics</Link>
             <Link href="/docs" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">API</Link>
+            <Link href="/ops-log" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">Ops Log</Link>
+            <Link href="/mcp" className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">MCP</Link>
           </div>
         </div>
       </footer>

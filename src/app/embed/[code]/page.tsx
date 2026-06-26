@@ -9,6 +9,7 @@ export default function EmbedBadge() {
   const [authentic, setAuthentic] = useState<boolean | null>(null);
   const [productName, setProductName] = useState("");
   const [brandName, setBrandName] = useState("");
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function check() {
@@ -20,6 +21,7 @@ export default function EmbedBadge() {
         setBrandName(data.product?.brandName || "");
       } catch {
         setAuthentic(false);
+        setError(true);
       }
     }
     check();
@@ -27,68 +29,103 @@ export default function EmbedBadge() {
 
   if (authentic === null) {
     return (
-      <div style={{ fontFamily: "system-ui", padding: 12, fontSize: 12, color: "#6b6960" }}>
-        Verifying...
+      <div style={{
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        padding: "14px 16px",
+        fontSize: 12,
+        color: "var(--genuproof-muted, #6b6960)",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        maxWidth: 320,
+        border: "1px solid var(--genuproof-border, #d4cfc4)",
+        borderRadius: 10,
+        background: "var(--genuproof-bg, #faf8f4)",
+      }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: "50%",
+          border: "2px solid var(--genuproof-border, #d4cfc4)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0,
+          animation: "pulse 1.5s ease-in-out infinite",
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2v4m0 12v4m-7.07-3.93 2.83-2.83m8.48-8.48 2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83" />
+          </svg>
+        </div>
+        <span>Verifying...</span>
+        <style>{`@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
       </div>
     );
   }
 
-  const bgColor = authentic ? "#f0faf5" : "#fef2f2";
-  const borderColor = authentic ? "#0d503c" : "#9b2c2c";
-  const textColor = authentic ? "#0d503c" : "#9b2c2c";
+  const isGreen = authentic && !error;
+  const primaryColor = isGreen ? "var(--genuproof-primary, #0d503c)" : "var(--genuproof-destructive, #9b2c2c)";
+  const bgColor = isGreen ? "var(--genuproof-primary-bg, #f0faf5)" : "var(--genuproof-destructive-bg, #fef2f2)";
 
   return (
-    <div
+    <a
+      href={`https://genuproof.com/verify/${code}`}
+      target="_blank"
+      rel="noopener noreferrer"
       style={{
         fontFamily: "system-ui, -apple-system, sans-serif",
-        border: `1px solid ${borderColor}30`,
-        borderTop: `3px solid ${borderColor}`,
+        border: `1px solid color-mix(in srgb, ${primaryColor} 20%, transparent)`,
+        borderTop: `3px solid ${primaryColor}`,
+        borderRadius: 10,
         background: bgColor,
         padding: "14px 16px",
         maxWidth: 320,
         display: "flex",
         alignItems: "center",
         gap: 12,
+        textDecoration: "none",
+        color: "inherit",
+        cursor: "pointer",
+        transition: "box-shadow 0.2s ease, border-color 0.2s ease",
       }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 2px 8px color-mix(in srgb, ${primaryColor} 15%, transparent)`; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
     >
       <div
         style={{
-          width: 32,
-          height: 32,
+          width: 34,
+          height: 34,
           borderRadius: "50%",
-          border: `2px solid ${borderColor}40`,
+          border: `2px solid color-mix(in srgb, ${primaryColor} 30%, transparent)`,
+          background: `color-mix(in srgb, ${primaryColor} 8%, transparent)`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
         }}
       >
-        {authentic ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={borderColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        {isGreen ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m4.5 12.75 6 6 9-13.5" />
           </svg>
         ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={borderColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 18 18 6M6 6l12 12" />
           </svg>
         )}
       </div>
-      <div style={{ minWidth: 0 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: textColor, letterSpacing: "0.05em", textTransform: "uppercase" as const }}>
-          {authentic ? "Verified Authentic" : "Not Verified"}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: primaryColor, letterSpacing: "0.04em", textTransform: "uppercase" as const }}>
+          {isGreen ? "Verified Authentic" : error ? "Verification Error" : "Not Verified"}
         </div>
-        <div style={{ fontSize: 11, color: "#6b6960", marginTop: 2, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
-          {brandName} — {productName}
-        </div>
-        <a
-          href={`https://genuproof.com/verify/${code}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontSize: 9, color: "#6b6960", textDecoration: "none", opacity: 0.6, marginTop: 2, display: "inline-block" }}
-        >
+        {(brandName || productName) && (
+          <div style={{ fontSize: 11, color: "#6b6960", marginTop: 3, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }} title={`${brandName} — ${productName}`}>
+            {brandName}{brandName && productName ? " — " : ""}{productName}
+          </div>
+        )}
+        <div style={{ fontSize: 9, color: "#6b6960", opacity: 0.5, marginTop: 3, display: "flex", alignItems: "center", gap: 4 }}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m4.5 12.75 6 6 9-13.5" />
+          </svg>
           Powered by GenuProof
-        </a>
+        </div>
       </div>
-    </div>
+    </a>
   );
 }
