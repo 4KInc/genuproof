@@ -32,7 +32,7 @@ const INTEGRATIONS = [
       storeLocation: "New York, NY",
       amount: 4999.00,
       currency: "USD",
-      verificationCode: "wfPHybaFV3_a",
+      verificationCode: "<your-code>",
     },
     statuses: ["sale completed → sold event"],
   },
@@ -57,39 +57,70 @@ export default function IntegrationsPage() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
+  const [testProduct, setTestProduct] = useState<{ code: string; name: string } | null>(null);
+  const [testProductLoaded, setTestProductLoaded] = useState(false);
 
   const active = INTEGRATIONS[activeIdx];
+
+  // Load a real product for test events
+  const ensureTestProduct = async () => {
+    if (testProductLoaded) return testProduct;
+    try {
+      const brandsRes = await fetch("/api/brands/list");
+      const brandsData = await brandsRes.json();
+      if (brandsData.brands?.length > 0) {
+        const bid = brandsData.brands[0].id;
+        const prodsRes = await fetch(`/api/products/list?brandId=${bid}&limit=1`);
+        const prodsData = await prodsRes.json();
+        if (prodsData.products?.length > 0) {
+          const p = { code: prodsData.products[0].verificationCode, name: prodsData.products[0].name };
+          setTestProduct(p);
+          setTestProductLoaded(true);
+          return p;
+        }
+      }
+    } catch {}
+    setTestProductLoaded(true);
+    return null;
+  };
 
   const runTest = async () => {
     setTesting(true);
     setTestResult(null);
     try {
+      const product = await ensureTestProduct();
+      if (!product) {
+        setTestResult(JSON.stringify({ error: "No products found. Register a product first via the Dashboard." }, null, 2));
+        setTesting(false);
+        return;
+      }
+
       const endpoints = ["/api/ingest/shipping", "/api/ingest/pos", "/api/ingest/warehouse"];
       const bodies = [
         {
-          trackingNumber: `TEST-${Date.now()}`,
+          trackingNumber: `FX-${Date.now().toString().slice(-10)}`,
           carrier: "FedEx",
           status: "delivered",
-          verificationCode: "wfPHybaFV3_a",
+          verificationCode: product.code,
           location: "New York, NY",
-          signedBy: "Demo User",
+          signedBy: "J. Smith",
         },
         {
-          orderId: `ORD-${Date.now()}`,
+          orderId: `SHP-${Date.now().toString().slice(-8)}`,
           platform: "shopify",
-          storeName: "Demo Store",
-          storeLocation: "San Francisco, CA",
-          amount: 299.99,
+          storeName: "Fifth Avenue Boutique",
+          storeLocation: "New York, NY",
+          amount: 4999.00,
           currency: "USD",
-          verificationCode: "wfPHybaFV3_a",
+          verificationCode: product.code,
         },
         {
           action: "inspected",
-          warehouseName: "Demo Warehouse",
-          warehouseLocation: "Austin, TX",
-          bay: "B-07",
-          inspectorId: "QC-DEMO",
-          verificationCode: "wfPHybaFV3_a",
+          warehouseName: "US Distribution Center",
+          warehouseLocation: "Newark, NJ",
+          bay: "A-14",
+          inspectorId: "QC-0042",
+          verificationCode: product.code,
         },
       ];
 
@@ -101,7 +132,7 @@ export default function IntegrationsPage() {
       const data = await res.json();
       setTestResult(JSON.stringify(data, null, 2));
     } catch (err) {
-      setTestResult(`Error: ${err}`);
+      setTestResult(JSON.stringify({ error: String(err) }, null, 2));
     } finally {
       setTesting(false);
     }
@@ -226,15 +257,31 @@ export default function IntegrationsPage() {
               {JSON.stringify(active.example, null, 2)}
             </pre>
 
-            {testResult && (
-              <div>
-                <div className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">
-                  Response
+            {testResult && (() => {
+              const parsed = JSON.parse(testResult);
+              const isError = !!parsed.error;
+              return (
+                <div>
+                  <div className="text-[10px] font-medium tracking-[0.15em] uppercase text-muted-foreground mb-2">
+                    Response
+                  </div>
+                  <pre className={`font-mono text-[10px] p-4 overflow-x-auto leading-relaxed rounded-lg border ${
+                    isError
+                      ? "text-destructive bg-destructive/5 border-destructive/20"
+                      : "text-primary bg-primary/5 border-primary/20"
+                  }`}>
+                    {testResult}
+                  </pre>
+                  {!isError && parsed.productId && (
+                    <div className="mt-3 flex gap-2">
+                      <a href={`/product/${parsed.productId}`} target="_blank" className="text-[11px] px-3 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-all">
+                        View Product
+                      </a>
+                    </div>
+                  )}
                 </div>
-                <pre className="font-mono text-[10px] text-primary bg-primary/5 border border-primary/20 p-4 overflow-x-auto leading-relaxed rounded-lg">
-                  {testResult}
-                </pre>
-              </div>
+              );
+            })()
             )}
           </div>
         </div>
